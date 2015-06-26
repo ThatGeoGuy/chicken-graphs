@@ -89,19 +89,9 @@
     [(not (and (graph-vertex-exists? g u)
                (graph-vertex-exists? g v)))
      #f]
-    [(set-in v (graph-neighbours g u))
+    [(set-in v (set-map car (graph-neighbours g u)))
      (if id
-       (call/cc
-         (lambda (k)
-           (set-for-each (lambda (edge)
-                           (if (and (equal? (car edge) v)
-                                    (equal? (hash-table-ref/default (cdr edge)
-                                                                    id:
-                                                                    #f)
-                                            id))
-                             (k #t)))
-                         (hash-table-ref (adjacency-table g) u))
-           #f))
+       (set-map cadr (graph-neighbours g u))
        #t)]
     [else #f]))
 
