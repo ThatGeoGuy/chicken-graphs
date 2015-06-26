@@ -76,7 +76,7 @@
              [G2 (graph-vertex-add (graph-vertex-add G1 u) v)]
              [G3 (graph-vertex-add (graph-vertex-add G1 v) u)]
              [G4 (graph-vertex-remove (graph-vertex-remove G2 u) v)]
-             [G5 (graph-vertex-remove (graph-vertex-remove G2 v) u)])
+             [G5 (graph-vertex-remove (graph-vertex-remove G3 v) u)])
         (test-assert "Vertex commutativity - u should be present in both graphs"
           (and (graph-vertex-exists? G2 u)
                (graph-vertex-exists? G3 u)))
