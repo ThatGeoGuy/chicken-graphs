@@ -86,12 +86,6 @@
       (g "The graph to test")
       (v "The vertex to search for")
       (@to "bool")
-      (@example
-        "Check if vertex a is in graph G"
-        (define G (make-graph '((a (b c))
-                                (b (a c))
-                                (c (a b)))))
-        (graph-vertex-exists? g 'a))
       (@no-source))
     (let ([data (adjacency-table g)])
      (hash-table-exists? data v)))

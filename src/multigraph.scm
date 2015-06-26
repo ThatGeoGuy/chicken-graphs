@@ -55,23 +55,13 @@
     [(not (and (graph-vertex-exists? g u)
                (graph-vertex-exists? g v)))
      #f]
-    [(and (set-in v (graph-neighbours g u))
-          (set-in u (graph-neighbours g v)))
+    [(and (set-in v (set-map car (graph-neighbours g u)))
+          (set-in u (set-map car (graph-neighbours g v))))
      (if id
-       (call/cc
-         (lambda (k)
-           (set-for-each (lambda (edge)
-                           (if (and (equal? (car edge) v)
-                                    (equal? (hash-table-ref/default (cdr edge)
-                                                                    id:
-                                                                    #f)
-                                            id))
-                             (k #t)))
-                         (hash-table-ref (adjacency-table g) u))
-           #f))
+       (set-in id (set-map cadr (graph-neighbours g u)))
        #t)]
-    [(or (set-in v (graph-neighbours g u))
-         (set-in u (graph-neighbours g v)))
+    [(or (set-in v (set-map car (graph-neighbours g u)))
+         (set-in u (set-map car (graph-neighbours g v))))
      (error 'graph-adjacent?
             "Undirected graph has unbalanced edges")]
     [else #f]))
