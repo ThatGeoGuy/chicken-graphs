@@ -37,10 +37,10 @@
                    (lambda () 8))
     (gen-fixnum)))
 
-(test-begin "MultiGraph Properties")
+(test-begin "MultiDigraph Properties")
 (test-group "identity properties"
   (test-generative ([v (gen-vertex-obj)])
-    (let* ([G1 (make-multigraph)]
+    (let* ([G1 (make-multidigraph)]
            [G2 (graph-vertex-remove (graph-vertex-add G1 v) v)])
       (test-assert "Vertex identity - adjacency lists should be empty"
         (and (equal? (graph->list G1) '())
@@ -49,7 +49,7 @@
   (test-generative ([u (gen-vertex-obj)]
                     [v (gen-vertex-obj)]
                     [id (gen-fixnum)])
-    (let* ([G1 (make-multigraph)]
+    (let* ([G1 (make-multidigraph)]
            [G2 (graph-edge-remove (graph-edge-add G1 u v id) u v id)])
       (test-assert "Edge identity - v should not be adjacent to u"
         (not (graph-adjacent? G2 u v id)))
@@ -74,7 +74,7 @@
                     [v (gen-vertex-obj)]
                     [id (gen-fixnum)])
     (unless (equal? u v)
-      (let* ([G1 (make-multigraph)]
+      (let* ([G1 (make-multidigraph)]
              [G2 (graph-vertex-add (graph-vertex-add G1 u) v)]
              [G3 (graph-vertex-add (graph-vertex-add G1 v) u)]
              [G4 (graph-vertex-remove (graph-vertex-remove G2 u) v)]
@@ -91,21 +91,20 @@
                (not (or (graph-vertex-exists? G5 u)
                         (graph-vertex-exists? G5 v)))))))
 
-    (let* ([G1 (make-multigraph)]
+    (let* ([G1 (make-multidigraph)]
            [G2 (graph-edge-add G1 u v id)]
            [G3 (graph-edge-add G1 v u id)]
            [G4 (graph-edge-remove G2 u v id)]
-           [G5 (graph-edge-remove G2 v u id)])
+           [G5 (graph-edge-remove G3 v u id)])
       (test-assert "Edge commutativity - u should be adjacent to v"
-        (and (graph-adjacent? G2 u v id)
-             (graph-adjacent? G3 u v id)))
+        (graph-adjacent? G2 u v id))
       (test-assert "Edge commutativity - v should be adjacent to u"
-        (and (graph-adjacent? G2 v u id)
-             (graph-adjacent? G3 v u id)))
+        (graph-adjacent? G3 v u id))
       (test-assert "Edge commutativity - removing edge u<->v: order should not matter"
+        ;; All tests are still valid since no edges should be present at all
         (not (or (graph-adjacent? G4 u v id)
                  (graph-adjacent? G4 v u id)
                  (graph-adjacent? G5 u v id)
                  (graph-adjacent? G5 v u id)))))))
 
-(test-end "MultiGraph Properties")
+(test-end "MultiDigraph Properties")

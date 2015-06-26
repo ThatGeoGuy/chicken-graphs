@@ -29,8 +29,12 @@
 
 (define (gen-vertex-obj)
   (gen-sample-of
-    (gen-symbol-of (gen-char char-set:letter+digit))
-    (gen-string-of (gen-char char-set:letter+digit))
+    (lambda ()
+      (string->symbol
+        ((gen-string-of (gen-char #\0 #\z)
+                        (lambda () 8)))))
+    (gen-string-of (gen-char #\0 #\z)
+                   (lambda () 8))
     (gen-fixnum)))
 
 (test-begin "Graph Properties")
