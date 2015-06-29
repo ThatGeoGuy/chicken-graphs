@@ -208,17 +208,16 @@
   (let ([data (adjacency-table g)])
    (hash-table-fold data
                     (lambda (key val knil)
-                      (let ([ws (set-filter (lambda (x)
-                                              (equal? u (car x)))
-                                            val)])
+                      (let ([ws (set-map (compose (cute hash-table-ref/default
+                                                        <>
+                                                        weight:
+                                                        1)
+                                                  cdr)
+                                         (set-filter (lambda (x)
+                                                       (equal? u (car x)))
+                                                     val))])
                         (if (not (set-null? ws))
-                          (apply +
-                                 knil
-                                 (map (lambda (x)
-                                        (hash-table-ref/default (cdr x)
-                                                                weight:
-                                                                1))
-                                      (set->list ws)))
+                          (set-fold + knil ws)
                           knil)))
                     0)))
 
@@ -228,7 +227,15 @@
     (u "The vertex of which we are interested in the outdegree of.")
     (@to "number")
     (@no-source))
-  (set-count (graph-neighbours g u)))
+  (let ([out-edges (hash-table-ref (adjacency-table g) u)])
+   (set-fold +
+             0
+             (set-map (compose (cute hash-table-ref/default
+                                     <>
+                                     weight:
+                                     1)
+                               cdr)
+                      out-edges))))
 
 (define-method (graph-degree (g <abstract-graph>) u)
   @("Calculates the overall degree of the vertex u in graph g."
