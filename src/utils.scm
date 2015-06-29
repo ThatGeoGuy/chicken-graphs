@@ -109,20 +109,9 @@
     (lambda (k)
       (hash-table-for-each adjacency-table
                            (lambda (key val)
-                             (if (set-in key val)
-                               (k #f))))
-      #t)))
-
-(define (duplicates? lst)
-  (let loop ([acc (list->set '())]
-             [lst lst])
-    (if (null? lst)
-      #f
-      (let ([new-set (set-union acc
-                                (set (car lst)))])
-        (if (set= new-set acc)
-          #t
-          (loop new-set (cdr lst)))))))
+                             (when (set-in key (set-map car val))
+                               (k #t))))
+      #f)))
 
 (define (multiple-edges? adjacency-table)
   (call/cc
