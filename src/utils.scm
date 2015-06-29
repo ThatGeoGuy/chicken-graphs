@@ -129,7 +129,8 @@
     (lambda (k)
       (hash-table-for-each adjacency-table
                            (lambda (key val)
-                             (if (duplicates? (map car (set->list val)))
+                             (when (> (set-count val)
+                                      (set-count (set-map car val)))
                                (k #t))))
       #f)))
 
