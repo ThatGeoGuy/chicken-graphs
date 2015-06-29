@@ -39,7 +39,7 @@
 
 (define-method (graph-copy (g <multigraph>))
   (make <multigraph>
-        'gattr (hash-table-copy (graph-attributes g))
+        'gattr (hash-table-copy (graph-attr g))
         'vattr (hash-table-copy (graph-vertex-attr g))
         'atbl (hash-table-copy (adjacency-table g))))
 
@@ -170,3 +170,6 @@
   (multiedge-update! g u v attr)
   (unless (equal? u v)
     (multiedge-update! g v u attr)))
+
+(define-method (graph-degree (g <multigraph>) u)
+  (graph-outdegree g u))

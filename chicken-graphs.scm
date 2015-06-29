@@ -29,20 +29,23 @@
    make-digraph
    make-graph
    graph-copy
-   graph->alist
-   graph->list
+   graph-attribute
+   graph-attribute-set
+   graph-attribute-set!
    digraph?
    multigraph?
    graph?
    graph-neighbours
    graph-vertex-exists?
    graph-adjacent?
+   graph-vertex
    graph-vertex-add
    graph-vertex-add!
    graph-vertex-remove
    graph-vertex-remove!
    graph-vertex-update
    graph-vertex-update!
+   graph-edge
    graph-edge-add
    graph-edge-add!
    graph-edge-remove

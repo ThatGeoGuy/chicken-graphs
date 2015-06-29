@@ -17,7 +17,7 @@
 ;;;; Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 (define-class <abstract-graph> ()
-  ([gattr  initform: (make-hash-table test: equal?) reader: graph-attributes]
+  ([gattr  initform: (make-hash-table test: equal?) reader: graph-attr]
    [vattr initform: (make-hash-table test: equal?) reader: graph-vertex-attr]
    [atbl  initform: (make-hash-table test: equal?) reader: adjacency-table]))
 
@@ -36,15 +36,20 @@
 (define-generic (graph-copy g))
 (define-generic (graph->alist g))
 (define-generic (graph->adj-list g))
+(define-generic (graph-attribute g))
+(define-generic (graph-attribute-set g))
+(define-generic (graph-attribute-set! g))
 (define-generic (graph-vertex-exists? g))
 (define-generic (graph-adjacent? g))
 (define-generic (graph-neighbours g))
+(define-generic (graph-vertex g))
 (define-generic (graph-vertex-add g))
 (define-generic (graph-vertex-add! g))
 (define-generic (graph-vertex-remove g))
 (define-generic (graph-vertex-remove! g))
 (define-generic (graph-vertex-update g))
 (define-generic (graph-vertex-update! g))
+(define-generic (graph-edge g))
 (define-generic (graph-edge-add g))
 (define-generic (graph-edge-add! g))
 (define-generic (graph-edge-remove g))
@@ -54,32 +59,35 @@
 (define-generic (graph-simple? g))
 (define-generic (graph-indegree g))
 (define-generic (graph-outdegree g))
+(define-generic (graph-degree g))
 
 ;;; Below are the default methods that aren't affected by specialization in graph type
 ;;; The reason for putting them here is to distinguish functionality based on type by
 ;;; separating the source files.
 
-(define-method (graph->alist (g <abstract-graph>))
-    @("Transforms a graph into an alist."
-      "Primarily for use in reading the current state of the graph."
-      "NOTE: The resulting alist will not be the same as the adjacency list passed in when make-graph is called."
-      (g "The graph to convert")
-      (@to "alist")
-      (@example-no-eval
-        "Convert graph G to an alist"
-        (graph->alist G))
-      (@no-source))
-    (hash-table->alist (adjacency-table g)))
+(define-method (graph-attribute (g <abstract-graph>) keyword)
+  (hash-table-ref (graph-attr g)
+                  keyword))
 
-(define-method (graph->list (g <abstract-graph>))
-    @("Transforms a graph into an adjacency list"
-      (g "The graph to transform")
-      (@to "list")
-      (@no-source))
-    (let ([data (adjacency-table g)])
-     (hash-table-map data
-                     (lambda (key val)
-                       (list key (set->list val))))))
+(define-method (graph-attribute-set! before: (g <abstract-graph>) keyword value)
+  (unless (keyword? keyword)
+    (error 'graph-attribute-set!
+           "Second argument must be a keyword (e.g. 'name:' without quotes), not just a symbol"
+           keyword)))
+
+(define-method (graph-attribute-set! (g <abstract-graph>) keyword value)
+  (hash-table-set! (graph-attr g) keyword value))
+
+(define-method (graph-attribute-set before: (g <abstract-graph>) keyword value)
+  (unless (keyword? keyword)
+    (error 'graph-attribute-set
+           "Second argument must be a keyword (e.g. 'name:' without quotes), not just a symbol"
+           keyword)))
+
+(define-method (graph-attribute-set (g <abstract-graph>) keyword value)
+  (let ([new-graph (graph-copy g)])
+   (graph-attribute-set! new-graph keyword value)
+   new-graph))
 
 (define-method (graph-vertex-exists? (g <abstract-graph>) v)
     @("Tests whether vertex v exists in graph g"
@@ -89,6 +97,14 @@
       (@no-source))
     (let ([data (adjacency-table g)])
      (hash-table-exists? data v)))
+
+(define-method (graph-vertex before: (g <abstract-graph>) vertex)
+  (unless (graph-vertex-exists? g vertex)
+    (error 'graph-vertex
+           "Cannot query vertex - does not exist" vertex)))
+
+(define-method (graph-vertex (g <abstract-graph>) vertex)
+  (hash-table->alist (hash-table-ref (graph-vertex-attr g) vertex)))
 
 (define-method (graph-vertex-add before: (g <abstract-graph>) vertex #!rest attr)
   (if (graph-vertex-exists? g vertex)
@@ -192,17 +208,17 @@
   (let ([data (adjacency-table g)])
    (hash-table-fold data
                     (lambda (key val knil)
-                      (let ([ws (filter (lambda (x)
-                                          (equal? u (car x)))
-                                        (set->list val))])
-                        (if (not (null? ws))
+                      (let ([ws (set-filter (lambda (x)
+                                              (equal? u (car x)))
+                                            val)])
+                        (if (not (set-null? ws))
                           (apply +
                                  knil
                                  (map (lambda (x)
                                         (hash-table-ref/default (cdr x)
                                                                 weight:
                                                                 1))
-                                      ws))
+                                      (set->list ws)))
                           knil)))
                     0)))
 
@@ -212,17 +228,9 @@
     (u "The vertex of which we are interested in the outdegree of.")
     (@to "number")
     (@no-source))
-  (let* ([data (adjacency-table g)]
-         [vs   (hash-table-ref/default data u (list->set '()))])
-    (foldl (lambda (k v)
-             (+ k
-                (hash-table-ref/default (cdr v)
-                                        weight:
-                                        1)))
-           0
-           (set->list vs))))
+  (set-count (graph-neighbours g u)))
 
-(define (graph-degree g u)
+(define-method (graph-degree (g <abstract-graph>) u)
   @("Calculates the overall degree of the vertex u in graph g."
     "Represents the sum of the indegree and outdegrees of vertex u in graph g."
     "NOTE: if the graph is weighted then the weighted indegree is calculated."

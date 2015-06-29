@@ -48,7 +48,7 @@
     (@to "<digraph>")
     (@no-source))
   (make <digraph>
-        'gattr (hash-table-copy (graph-attributes g))
+        'gattr (hash-table-copy (graph-attr g))
         'vattr (hash-table-copy (graph-vertex-attr g))
         'atbl (hash-table-copy (adjacency-table g))))
 
@@ -65,6 +65,17 @@
      #f]
     [(set-in v (graph-neighbours g u)) #t]
     [else #f]))
+
+(define-method (graph-edge before: (g <digraph>) u v)
+  (unless (graph-adjacent? g u v)
+    (error 'graph-edge "Cannot query edge - does not exist" u v)))
+
+(define-method (graph-edge (g <digraph>) u v)
+  (let* ([edges (hash-table-ref (adjacency-table g) u)]
+         [e (set-find (lambda (x)
+                        (equal? (car x) v))
+                      edges)])
+    (hash-table->alist (cdr e))))
 
 (define-method (graph-edge-add before: (g <digraph>) u v #!rest attr)
   (when (graph-adjacent? g u v)

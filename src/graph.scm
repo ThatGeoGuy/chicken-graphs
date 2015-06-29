@@ -44,7 +44,7 @@
     (@to "<graph>")
     (@no-source))
   (make <graph>
-        'gattr (hash-table-copy (graph-attributes g))
+        'gattr (hash-table-copy (graph-attr g))
         'vattr (hash-table-copy (graph-vertex-attr g))
         'atbl (hash-table-copy (adjacency-table g))))
 
@@ -162,3 +162,6 @@
   (edge-update! g u v attr)
   (unless (equal? u v)
     (edge-update! g v u attr)))
+
+(define-method (graph-degree (g <graph>) u)
+  (graph-outdegree g u))

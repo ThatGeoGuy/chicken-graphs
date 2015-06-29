@@ -42,7 +42,7 @@
 
 (define-method (print-object (object <multidigraph>) port)
   (display "MultiDigraph\n" port)
-  (display "----------\n" port)
+  (display "------------\n" port)
   (hash-table-for-each (graph-vertex-attr object)
                        (lambda (key val)
                          (display key port)
@@ -73,7 +73,7 @@
     (@to "<multidigraph>")
     (@no-source))
   (make <multidigraph>
-        'gattr (hash-table-copy (graph-attributes g))
+        'gattr (hash-table-copy (graph-attr g))
         'vattr (hash-table-copy (graph-vertex-attr g))
         'atbl (hash-table-copy (adjacency-table g))))
 
@@ -94,6 +94,20 @@
        (set-map cadr (graph-neighbours g u))
        #t)]
     [else #f]))
+
+(define-method (graph-edge before: (g <multidigraph>) u v id)
+  (unless (graph-adjacent? g u v id)
+    (error 'graph-edge "Cannot query edge - does not exist" u v id)))
+
+(define-method (graph-edge (g <multidigraph>) u v id)
+  (let* ([edges (hash-table-ref (adjacency-table g) u)]
+         [e (set-find (lambda (x)
+                        (and (equal? (car x) v)
+                             (equal? (hash-table-ref (cdr x)
+                                                     id:)
+                                     id)))
+                      edges)])
+    (hash-table->alist (cdr e))))
 
 (define-method (graph-edge-add before: (g <multidigraph>) u v id #!rest attr)
   (when (graph-adjacent? g u v id)
