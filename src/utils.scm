@@ -199,7 +199,7 @@
                                   edge-attr))))
 
 (define (multiedge-update! g u v id attr)
-  (when (find (cut eq? id: <>) attr)
+  (when (any (cute eq? id: <>) attr)
     (error 'multiedge-update!
            "Cannot update ID attribute once set. Remove edge then add again"
            attr))
@@ -217,7 +217,7 @@
                                        u
                                        (set-union (hash-table-ref data u)
                                                   (set (cons v
-                                                             (hash-table-merge (hash-table-from-keys attr)
-                                                                               eattr)))))))
+                                                             (hash-table-merge! (hash-table-from-keys attr)
+                                                                                eattr)))))))
                   edge-attrs)))
 
