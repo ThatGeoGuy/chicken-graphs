@@ -223,7 +223,7 @@
     (u "The base vertex")
     (v "The extended vertex")
     (@no-source))
-  (multiedge-update! g u v attr))
+  (multiedge-update! g u v id attr))
 
 (define-method (graph-simple? (g <multidigraph>))
   @("Predicate to evaluate if a multigraph is simple."

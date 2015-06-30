@@ -167,9 +167,9 @@
     (u "The base vertex")
     (v "The extended vertex")
     (@no-source))
-  (multiedge-update! g u v attr)
+  (multiedge-update! g u v id attr)
   (unless (equal? u v)
-    (multiedge-update! g v u attr)))
+    (multiedge-update! g v u id attr)))
 
 (define-method (graph-degree (g <multigraph>) u)
   (graph-outdegree g u))
