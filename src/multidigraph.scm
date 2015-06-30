@@ -232,5 +232,5 @@
     (@to "bool")
     (@no-source))
   (let ([data (adjacency-table g)])
-   (not (or (multiple-edges? data)
-            (loops? data)))))
+   (and (not (multiple-edges? data))
+        (not (loops? data)))))
