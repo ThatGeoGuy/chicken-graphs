@@ -1,9 +1,12 @@
 ;; -*- Hen -*-
 
-(compile -O3 -d0 -s chicken-graphs.scm -j graphs)
-(compile -O2 -d0 -s graphs.import.scm)
+(define (dynld-name fn)
+  (make-pathname #f fn ##sys#load-dynamic-extension))
+
+(compile -X hahn -O3 -d0 -s chicken-graphs.scm -j graphs -o graphs.so)
+(compile -X hahn -O2 -d0 -s graphs.import.scm)
 
 (install-extension
  'graphs
- `(,(dynld-name "graphs") ,(dynld-name "graphs.import"))
- `(version 0.1)))
+ `(,(dynld-name "graphs") ,(dynld-name "graphs.import")) 
+ `((version 0.1)))
