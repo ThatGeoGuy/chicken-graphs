@@ -1,0 +1,17 @@
+;; -*- Hen -*-
+
+((egg "chicken-graphs.egg")
+ ; List of files that should be bundled alongside egg
+ (files "src"
+        "tests"
+        "chicken-graphs.setup"
+        "chicken-graphs.meta"
+        "chicken-graphs.scm"
+        "LICENSE")
+
+ (license "LGPL-3")
+ (category data)
+ (needs arrays coops hahn matchable)
+ (test-depends test test-generative data-generators)
+ (author "Jeremy Steward")
+ (synopsis "Provides combinatorial graphs, digraphs, multigraphs, and multidigraphs."))
