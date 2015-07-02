@@ -43,6 +43,7 @@
 (define-generic (graph-adjacent? g))
 (define-generic (graph-neighbours g))
 (define-generic (graph-vertex g))
+(define-generic (graph-vertices g))
 (define-generic (graph-vertex-add g))
 (define-generic (graph-vertex-add! g))
 (define-generic (graph-vertex-remove g))
@@ -64,6 +65,12 @@
 ;;; Below are the default methods that aren't affected by specialization in graph type
 ;;; The reason for putting them here is to distinguish functionality based on type by
 ;;; separating the source files.
+
+(define-method (graph-attribute before: (g <abstract-graph>) keyword)
+  (unless (hash-table-exists? (graph-attr g) keyword)
+    (error 'graph-attribute
+           "Attribute does not exist within graph"
+           keyword)))
 
 (define-method (graph-attribute (g <abstract-graph>) keyword)
   (hash-table-ref (graph-attr g)
@@ -105,6 +112,9 @@
 
 (define-method (graph-vertex (g <abstract-graph>) vertex)
   (hash-table->alist (hash-table-ref (graph-vertex-attr g) vertex)))
+
+(define-method (graph-vertices (g <abstract-graph>))
+  (list->set (hash-table-keys (graph-vertex-attr g))))
 
 (define-method (graph-vertex-add before: (g <abstract-graph>) vertex #!rest attr)
   (if (graph-vertex-exists? g vertex)

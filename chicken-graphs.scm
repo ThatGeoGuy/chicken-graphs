@@ -39,6 +39,7 @@
    graph-vertex-exists?
    graph-adjacent?
    graph-vertex
+   graph-vertices
    graph-vertex-add
    graph-vertex-add!
    graph-vertex-remove
