@@ -1,0 +1,5 @@
+;; -*- Scheme -*-
+
+(repo git "git://github.com/ThatGeoGuy/chicken-graphs.git")
+(uri targz "https://codeload.github.com/ThatGeoGuy/chicken-graphs/tar.gz/{egg-release}")
+(release "0.1")
