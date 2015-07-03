@@ -34,8 +34,7 @@
   ())
 
 (define-generic (graph-copy g))
-(define-generic (graph->alist g))
-(define-generic (graph->adj-list g))
+(define-generic (graph->list g))
 (define-generic (graph-attribute g))
 (define-generic (graph-attribute-set g))
 (define-generic (graph-attribute-set! g))
@@ -65,6 +64,11 @@
 ;;; Below are the default methods that aren't affected by specialization in graph type
 ;;; The reason for putting them here is to distinguish functionality based on type by
 ;;; separating the source files.
+
+(define-method (graph->list (g <abstract-graph>))
+  (hash-table-map (adjacency-table g)
+                  (lambda (key val)
+                    (list key val))))
 
 (define-method (graph-attribute before: (g <abstract-graph>) keyword)
   (unless (hash-table-exists? (graph-attr g) keyword)

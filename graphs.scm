@@ -29,6 +29,7 @@
    make-digraph
    make-graph
    graph-copy
+   graph->list
    graph-attribute
    graph-attribute-set
    graph-attribute-set!
