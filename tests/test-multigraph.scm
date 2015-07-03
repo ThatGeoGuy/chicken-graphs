@@ -16,27 +16,6 @@
 ;;;; License along with this library; if not, write to the Free Software
 ;;;; Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-(use arrays
-     data-generators
-     test
-     test-generative)
-(import sets)
-
-;; Every test needs to load the module first
-;; The module should be useable without having to install it first
-(load-relative "../chicken-graphs")
-(import graphs)
-
-(define (gen-vertex-obj)
-  (gen-sample-of
-    (lambda ()
-      (string->symbol
-        ((gen-string-of (gen-char #\0 #\z)
-                        (lambda () 8)))))
-    (gen-string-of (gen-char #\0 #\z)
-                   (lambda () 8))
-    (gen-fixnum)))
-
 (test-begin "MultiGraph Properties")
 (test-group "identity properties"
   (test-generative ([v (gen-vertex-obj)])
