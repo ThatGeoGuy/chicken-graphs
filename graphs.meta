@@ -9,7 +9,7 @@
         "graphs.scm"
         "LICENSE")
 
- (license "LGPL-3")
+ (license "BSD3")
  (category data)
  (depends arrays coops hahn matchable)
  (test-depends test test-generative data-generators)

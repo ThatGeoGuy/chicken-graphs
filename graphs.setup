@@ -9,4 +9,4 @@
 (install-extension
  'graphs
  `(,(dynld-name "graphs") ,(dynld-name "graphs.import"))
- `((version "0.1")))
+ `((version "0.2")))
