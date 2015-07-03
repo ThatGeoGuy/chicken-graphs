@@ -4,9 +4,9 @@
  ; List of files that should be bundled alongside egg
  (files "src"
         "tests"
-        "chicken-graphs.setup"
-        "chicken-graphs.meta"
-        "chicken-graphs.scm"
+        "graphs.setup"
+        "graphs.meta"
+        "graphs.scm"
         "LICENSE")
 
  (license "LGPL-3")
