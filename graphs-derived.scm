@@ -30,7 +30,7 @@
 (use hahn)
 (module graphs-derived
   (
-   isomorphism?
+   isomorphic?
    )
 
   (import chicken scheme data-structures)
