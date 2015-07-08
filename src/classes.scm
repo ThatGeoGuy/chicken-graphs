@@ -211,7 +211,7 @@
    (vertex-update! new-graph vertex attr)
    new-graph))
 
-(define-method (graph-vertex-update! (g <abstract-graph>) vertex #!rest attr)
+(define-method (graph-vertex-update! before: (g <abstract-graph>) vertex #!rest attr)
   (if (not (graph-vertex-exists? g vertex))
     (error 'graph-vertex-update!
            "Cannot update vertex - does not exist" vertex)))
