@@ -253,14 +253,13 @@
     (@to "number")
     (@no-source))
   (let ([out-edges (hash-table-ref (adjacency-table g) u)])
-   (set-fold +
-             0
-             (set-map (compose (cute hash-table-ref/default
-                                     <>
-                                     weight:
-                                     1)
-                               cdr)
-                      out-edges))))
+   (foldl + 0
+          (map (compose (cute hash-table-ref/default
+                              <>
+                              weight:
+                              1)
+                        cdr)
+               (set->list out-edges)))))
 
 (define-method (graph-degree (g <abstract-graph>) u)
   @("Calculates the overall degree of the vertex u in graph g."
