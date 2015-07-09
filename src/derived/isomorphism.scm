@@ -60,14 +60,17 @@
   )
 
 (define (syntactic-feasibility? s n m)
-  (foldl (lambda (k f)
-           (and k (f s n m)))
-         #t
-         (list feasibility-rule-pred
-               feasibility-rule-succ
-               feasibility-rule-in
-               feasibility-rule-out
-               feasibility-rule-new)))
+  (call/cc
+    (lambda (k)
+      (for-each (lambda (f)
+                  (unless (f s n m)
+                    (k #f)))
+                (list feasibility-rule-pred
+                      feasibility-rule-succ
+                      feasibility-rule-in
+                      feasibility-rule-out
+                      feasibility-rule-new))
+      #t)))
 
 (define (semantic-feasibility? s n m)
   ;; TODO Implement a more appropriate semantic feasibility later
