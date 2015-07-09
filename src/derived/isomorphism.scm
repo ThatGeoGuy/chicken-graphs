@@ -27,4 +27,79 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
+(define (pred G vs)
+  ;; TODO Implement procedure to return predecessors of vs
+  )
 
+(define (succ G vs)
+  ;; TODO Implement procedure to return successors of vs
+  )
+
+(define (candidate-pairs G1 G2)
+  ;; TODO Logic for producing candidate pairs
+  )
+
+(define (feasibility-rule-pred s n m)
+  ;; TODO Implement eqn (3) from VF2 paper
+  )
+
+(define (feasibility-rule-succ s n m)
+  ;; TODO Implement eqn (4) from VF2 paper
+  )
+
+(define (feasibility-rule-in s n m)
+  ;; TODO Implement eqn (5) from VF2 paper
+  )
+
+(define (feasibility-rule-out s n m)
+  ;; TODO Implement eqn (6) from VF2 paper
+  )
+
+(define (feasibility-rule-new s n m)
+  ;; TODO Implement eqn (7) from VF2 paper
+  )
+
+(define (syntactic-feasibility? s n m)
+  (foldl (lambda (k f)
+           (and k (f s n m)))
+         #t
+         (list feasibility-rule-pred
+               feasibility-rule-succ
+               feasibility-rule-in
+               feasibility-rule-out
+               feasibility-rule-new)))
+
+(define (semantic-feasibility? s n m)
+  ;; TODO Implement a more appropriate semantic feasibility later
+  #t)
+
+(define (graph-match G1 G2)
+  (let ([matchings (make-set)])
+   (let match-loop ([s (make-set)])
+    (cond
+      [(set= (set-map cdr s)
+             (graph-vertices G2))
+       (set-add! s matchings)]
+      [else (for-each (lambda (vertex-pair)
+                        (let ([n (car vertex-pair)]
+                              [m (cdr vertex-pair)])
+                          (cond
+                            [(and (syntactic-feasibility? s n m)
+                                  (semantic-feasibility? s n m))
+                             (match-loop (set-union s (cons n m))
+                                         (cdr P))]
+                            [else (match-loop s (cdr P))])))
+                      (candidate-pairs s G1 G2))]))
+   (set->list matchings)))
+
+(define (isomorphic? G1 G2 #!key (semantic #f))
+  @("Tests whether two graphs are isomorphic, using the VF2 algorithm."
+    "See: http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=1323804"
+    "If semantic is provided and non-false, then a semantic check is likewise performed."
+    (@to "set")
+    (@no-source))
+  (unless (eq? (graph-order G1)
+               (graph-order G2))
+    #f)
+  ;; TODO Logic for finding a mapping
+  )
