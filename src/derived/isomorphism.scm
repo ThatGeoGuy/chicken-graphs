@@ -27,6 +27,15 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
+(define (lazy-flatten seq-tree)
+  (cond
+    [(lazy-null? seq-tree) (lazy-seq '())]
+    [(lazy-seq? (lazy-head seq-tree))
+     (lazy-append (lazy-flatten (lazy-head seq-tree))
+                  (lazy-flatten (lazy-tail seq-tree)))]
+    [else (lazy-seq (cons (lazy-head seq-tree)
+                          (lazy-flatten (lazy-tail seq-tree))))]))
+
 (define (pred G vs)
   ;; TODO Implement procedure to return predecessors of vs
   )
@@ -93,17 +102,16 @@
      [(set= (set-map cdr s)
             (graph-vertices G2))
       s]
-     [else (foldl (lambda (matchings vertex-pair)
-                    (let ([n (car vertex-pair)]
-                          [m (cdr vertex-pair)])
-                      (if (and (syntactic-feasibility? s n m)
-                               (semantic-feasibility? s n m))
-                        (append matchings
-                                (flatten
-                                  (list
-                                    (match-loop (set-union s (set (cons n m))))))))))
-                  '()
-                  (candidate-pairs s G1 G2))])))
+     [else (lazy-flatten
+             (foldl (lambda (matchings vertex-pair)
+                      (let ([n (car vertex-pair)]
+                            [m (cdr vertex-pair)])
+                        (if (and (syntactic-feasibility? s n m)
+                                 (semantic-feasibility? s n m))
+                          (lazy-seq (cons (match-loop (set-union s (set (cons n m))))
+                                          matchings)))))
+                    (make-lazy-seq (lambda () '()))
+                    (candidate-pairs s G1 G2)))])))
 
 (define (isomorphic? G1 G2 #!key (semantic #f))
   @("Tests whether two graphs are isomorphic, using the VF2 algorithm."
