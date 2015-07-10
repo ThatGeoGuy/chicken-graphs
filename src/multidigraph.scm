@@ -31,6 +31,7 @@
 ;;; defined in the graphs module:
 ;;;
 ;;;     src/utils
+;;;     src/low-level
 ;;;     src/classes
 ;;;
 
