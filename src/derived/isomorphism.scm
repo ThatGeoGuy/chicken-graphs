@@ -45,18 +45,17 @@
   )
 
 (define (candidate-pairs s G1 G2)
-  ;; TODO Logic for producing candidate pairs
   (let ([T1 (set->list
               (set-difference (graph-vertices G1)
                               (set-map car s)))]
         [T2 (set->list
               (set-difference (graph-vertices G2)
                               (set-map cdr s)))])
-    (concatenate (map (lambda (x)
-                        (map (lambda (y)
-                               (cons x y))
-                             T2))
-                      T1))))
+    (if (not (null? T1))
+      (map (lambda (y)
+             (cons (car T1) y))
+           T2)
+      '())))
 
 (define (feasibility-rule-pred s n m)
   ;; TODO Implement eqn (3) from VF2 paper
