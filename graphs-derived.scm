@@ -42,5 +42,6 @@
        srfi-1)
   (import sets)
 
+  (include "src/utils")
   (include "src/derived/isomorphism")
   )

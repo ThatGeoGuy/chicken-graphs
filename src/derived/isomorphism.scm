@@ -57,38 +57,64 @@
            T2)
       '())))
 
-(define (feasibility-rule-pred s n m)
-  ;; TODO Implement eqn (3) from VF2 paper
-  )
+(define (feas-rule-self G1 G2 s n m)
+  @("Tests whether or not there are the same number of self loops in G1 and G2 at vertices n and m."
+    "If these equal between the two graphs, then this procedure returns #t, otherwise #f."
+    (@to "bool")
+    (@no-source))
+  (= (set-count (set-filter (lambda (x)
+                              (equal? (if (multigraph? G1)
+                                        (car x)
+                                        x)
+                                      n))
+                            (graph-neighbours G1)))
+     (set-count (set-filter (lambda (x)
+                              (equal? (if (multigraph? G2)
+                                        (car x)
+                                        x)
+                                      m))
+                            (graph-neighbours G2)))))
 
-(define (feasibility-rule-succ s n m)
-  ;; TODO Implement eqn (4) from VF2 paper
-  )
+(define (num-adjacencies G u v)
+    @("Calculates the number of adjacencies (edges) between vertices u and v"
+      (@to "integer")
+      (@no-source))
+    (set-count (set-filter (lambda (x)
+                             (equal? (if (multigraph? G) (car x) x)
+                                     v))
+                           (graph-neighbours G u))))
 
-(define (feasibility-rule-in s n m)
-  ;; TODO Implement eqn (5) from VF2 paper
-  )
-
-(define (feasibility-rule-out s n m)
-  ;; TODO Implement eqn (6) from VF2 paper
-  )
-
-(define (feasibility-rule-new s n m)
-  ;; TODO Implement eqn (7) from VF2 paper
-  )
+(define (feas-rule-neighbours G1 G2 s n m)
+  @("Feasibility rule which evaluates the neighbours of n and m which are in our partial mapping."
+    "Such neighbours (n' and m') should have the same number of edges n->n' as m->m' and for each"
+    "neighbour n' of n there should exist a corresponding neighbour m' of m that matches."
+    (@to "bool")
+    (@no-source))
+  ;; Defined as a function to avoid repetition where possible
+  (define (candidate-neighbours-match? G1 G2 s n m)
+    (call/cc
+      (lambda (k)
+        (set-for-each (lambda (neighbour)
+                        (let* ([match (set-find (lambda (x)
+                                                  (equal? (car x)
+                                                          neighbour))
+                                                s)]
+                               [m-prime (if match (cdr match) #f)])
+                          (when m-prime
+                            (unless (graph-adjacent? G2 m m-prime)
+                              (k #f))
+                            (unless (= (num-adjacencies G1 neighbour n)
+                                       (num-adjacencies G2 m-prime m))
+                              (k #f)))))
+                      (graph-neighbours G1 n))
+        #t)))
+  (and (candidate-neighbours-match? G1 G2 s n m)
+       ;; The set has to be flipped below to account for n and m being flipped
+       (candidate-neighbours-match? G2 G1
+                                    (set-map (lambda (x) (cons (cdr x) (car x))) s)
+                                    m n)))
 
 (define (syntactic-feasibility? s n m)
-  ;(call/cc
-  ;  (lambda (k)
-  ;    (for-each (lambda (f)
-  ;                (unless (f s n m)
-  ;                  (k #f)))
-  ;              (list feasibility-rule-pred
-  ;                    feasibility-rule-succ
-  ;                    feasibility-rule-in
-  ;                    feasibility-rule-out
-  ;                    feasibility-rule-new))
-  ;    #t))
   #t)
 
 (define (semantic-feasibility? s n m)
@@ -108,7 +134,8 @@
                         (if (and (syntactic-feasibility? s n m)
                                  (semantic-feasibility? s n m))
                           (lazy-seq (cons (match-loop (set-union s (set (cons n m))))
-                                          matchings)))))
+                                          matchings))
+                          matchings)))
                     (make-lazy-seq (lambda () '()))
                     (candidate-pairs s G1 G2)))])))
 
