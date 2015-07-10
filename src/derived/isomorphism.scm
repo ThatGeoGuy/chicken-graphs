@@ -35,9 +35,19 @@
   ;; TODO Implement procedure to return successors of vs
   )
 
-(define (candidate-pairs G1 G2)
+(define (candidate-pairs s G1 G2)
   ;; TODO Logic for producing candidate pairs
-  )
+  (let ([T1 (set->list
+              (set-difference (graph-vertices G1)
+                              (set-map car s)))]
+        [T2 (set->list
+              (set-difference (graph-vertices G2)
+                              (set-map cdr s)))])
+    (concatenate (map (lambda (x)
+                        (map (lambda (y)
+                               (cons x y))
+                             T2))
+                      T1))))
 
 (define (feasibility-rule-pred s n m)
   ;; TODO Implement eqn (3) from VF2 paper
@@ -60,40 +70,40 @@
   )
 
 (define (syntactic-feasibility? s n m)
-  (call/cc
-    (lambda (k)
-      (for-each (lambda (f)
-                  (unless (f s n m)
-                    (k #f)))
-                (list feasibility-rule-pred
-                      feasibility-rule-succ
-                      feasibility-rule-in
-                      feasibility-rule-out
-                      feasibility-rule-new))
-      #t)))
+  ;(call/cc
+  ;  (lambda (k)
+  ;    (for-each (lambda (f)
+  ;                (unless (f s n m)
+  ;                  (k #f)))
+  ;              (list feasibility-rule-pred
+  ;                    feasibility-rule-succ
+  ;                    feasibility-rule-in
+  ;                    feasibility-rule-out
+  ;                    feasibility-rule-new))
+  ;    #t))
+  #t)
 
 (define (semantic-feasibility? s n m)
   ;; TODO Implement a more appropriate semantic feasibility later
   #t)
 
 (define (graph-match G1 G2)
-  (let ([matchings (make-set)])
-   (let match-loop ([s (make-set)])
-    (cond
-      [(set= (set-map cdr s)
-             (graph-vertices G2))
-       (set-add! s matchings)]
-      [else (for-each (lambda (vertex-pair)
-                        (let ([n (car vertex-pair)]
-                              [m (cdr vertex-pair)])
-                          (cond
-                            [(and (syntactic-feasibility? s n m)
-                                  (semantic-feasibility? s n m))
-                             (match-loop (set-union s (cons n m))
-                                         (cdr P))]
-                            [else (match-loop s (cdr P))])))
-                      (candidate-pairs s G1 G2))]))
-   (set->list matchings)))
+  (let match-loop ([s (make-set)])
+   (cond
+     [(set= (set-map cdr s)
+            (graph-vertices G2))
+      s]
+     [else (foldl (lambda (matchings vertex-pair)
+                    (let ([n (car vertex-pair)]
+                          [m (cdr vertex-pair)])
+                      (if (and (syntactic-feasibility? s n m)
+                               (semantic-feasibility? s n m))
+                        (append matchings
+                                (flatten
+                                  (list
+                                    (match-loop (set-union s (set (cons n m))))))))))
+                  '()
+                  (candidate-pairs s G1 G2))])))
 
 (define (isomorphic? G1 G2 #!key (semantic #f))
   @("Tests whether two graphs are isomorphic, using the VF2 algorithm."
@@ -103,6 +113,11 @@
     (@no-source))
   (unless (eq? (graph-order G1)
                (graph-order G2))
+    #f)
+  (unless (equal? (map (cute graph-degree G1 <>)
+                       (set->list (graph-vertices G1)))
+                  (map (cute graph-degree G2 <>)
+                       (set->list (graph-vertices G2))))
     #f)
   ;; TODO Logic for finding a mapping
   )
