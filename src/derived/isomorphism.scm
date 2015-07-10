@@ -88,6 +88,7 @@
   @("Feasibility rule which evaluates the neighbours of n and m which are in our partial mapping."
     "Such neighbours (n' and m') should have the same number of edges n->n' as m->m' and for each"
     "neighbour n' of n there should exist a corresponding neighbour m' of m that matches."
+    "NOTE: This should hold true both ways, so neighbours of G1 and G2 are both tested."
     (@to "bool")
     (@no-source))
   ;; Defined as a function to avoid repetition where possible
