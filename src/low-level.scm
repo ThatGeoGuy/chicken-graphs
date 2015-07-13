@@ -56,19 +56,20 @@
                    (hash-table-from-keys attr)))
 
 (define (vertex-remove! g vertex)
-  (let ([data (adjacency-table g)])
-   (hash-table-remove! data (lambda (key val)
-                              (equal? vertex key)))
-   (hash-table-remove! data (lambda (key val)
-                              (equal? vertex key)))
-   (hash-table-for-each data
-                        (lambda (key val)
-                          (let ([new-val (filter (lambda (x)
-                                                   (equal? vertex (car x)))
-                                                 (set->list val))])
-                            (hash-table-set! data
-                                             key
-                                             (set-difference val (list->set new-val))))))))
+  (let ([data (adjacency-table g)]
+        [vattr (graph-vertex-attr g)])
+    (hash-table-remove! data (lambda (key val)
+                               (equal? vertex key)))
+    (hash-table-remove! vattr (lambda (key val)
+                                (equal? vertex key)))
+    (hash-table-for-each data
+                         (lambda (key val)
+                           (let ([new-val (filter (lambda (x)
+                                                    (equal? vertex (car x)))
+                                                  (set->list val))])
+                             (hash-table-set! data
+                                              key
+                                              (set-difference val (list->set new-val))))))))
 
 (define (vertex-update! g vertex attr)
   (let ([attr-table (hash-table-ref (graph-vertex-attr g) vertex)])
