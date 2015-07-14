@@ -27,31 +27,24 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(use arrays
-     data-generators
-     posix
-     test
-     test-generative)
-(import sets)
+(test-begin "Isomorphism")
 
-;; Every test needs to load the module first
-;; The module should be useable without having to install it first
-(use graphs
-     graphs-derived)
+(test-group "Isomorphic Identity"
+  (test-generative ([us (gen-list-of (gen-vertex-obj) (range 0 20))]
+                    [vs (gen-list-of (gen-vertex-obj) (range 0 20))])
+    (let ([G (make-graph)]
+          [DG (make-digraph)]
+          [edges (zip us vs)])
+      (for-each (lambda (graph-obj)
+                  (for-each (lambda (vertex-pair)
+                              (graph-edge-add! graph-obj
+                                               (car vertex-pair)
+                                               (cadr vertex-pair)))
+                            edges))
+                (list G DG))
+      (test-assert "Graph is isomorphic with itself"
+        (graph-isomorphic? G G))
+      (test-assert "DiGraph is isomorphic with itself"
+        (graph-isomorphic? DG DG)))))
 
-(define (gen-vertex-obj)
-  (gen-sample-of
-    (lambda ()
-      (string->symbol
-        ((gen-string-of (gen-char #\0 #\z)
-                        (lambda () 8)))))
-    (gen-string-of (gen-char #\0 #\z)
-                   (lambda () 8))
-    (gen-fixnum)))
-
-(include "test-digraph.scm")
-(include "test-graph.scm")
-(include "test-multidigraph.scm")
-(include "test-multigraph.scm")
-(include "test-isomorphism.scm")
-(test-exit)
+(test-end "Isomorphism")
