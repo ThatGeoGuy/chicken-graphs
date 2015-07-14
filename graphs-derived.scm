@@ -30,7 +30,12 @@
 (use hahn)
 (module graphs-derived
   (
-   isomorphic?
+   graph-isomorphism-stream
+   subgraph-isomorphism-stream
+   graph-isomorphism-list
+   subgraph-isomorphism-list
+   graph-isomorphic?
+   subgraph-isomorphic?
    )
 
   (import chicken scheme data-structures)
@@ -39,9 +44,12 @@
        coops-primitive-objects
        graphs
        matchable
-       srfi-1)
+       srfi-1
+       streams
+       streams-derived)
   (import sets)
 
   (include "src/utils")
+  (include "src/derived/utils-derived")
   (include "src/derived/isomorphism")
   )

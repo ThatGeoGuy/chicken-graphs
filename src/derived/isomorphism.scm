@@ -27,24 +27,7 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-(define (lazy-flatten seq-tree)
-  (cond
-    [(lazy-null? seq-tree) (lazy-seq '())]
-    [(lazy-seq? (lazy-head seq-tree))
-     (lazy-append (lazy-flatten (lazy-head seq-tree))
-                  (lazy-flatten (lazy-tail seq-tree)))]
-    [else (lazy-seq (cons (lazy-head seq-tree)
-                          (lazy-flatten (lazy-tail seq-tree))))]))
-
-(define (pred G vs)
-  ;; TODO Implement procedure to return predecessors of vs
-  )
-
-(define (succ G vs)
-  ;; TODO Implement procedure to return successors of vs
-  )
-
-(define (candidate-pairs s G1 G2)
+(define (candidate-pairs G1 G2 s)
   (let ([T1 (set->list
               (set-difference (graph-vertices G1)
                               (set-map car s)))]
@@ -60,37 +43,42 @@
 (define (feas-rule-self G1 G2 s n m)
   @("Tests whether or not there are the same number of self loops in G1 and G2 at vertices n and m."
     "If these equal between the two graphs, then this procedure returns #t, otherwise #f."
+    (G1 "First graph")
+    (G2 "Second graph")
+    (s "A set of partial matches")
+    (n "The candidate from graph G1 to add to s")
+    (m "The candidate from graph G2 to add to s")
+    (gteq? "A greater than or equals comparator. This is to differentiate subgraph from graph isomorphism.")
     (@to "bool")
-    (@no-source))
+    (@no-source)
+    (@internal))
   (= (set-count (set-filter (lambda (x)
                               (equal? (if (multigraph? G1)
                                         (car x)
                                         x)
                                       n))
-                            (graph-neighbours G1)))
+                            (graph-neighbours G1 n)))
      (set-count (set-filter (lambda (x)
                               (equal? (if (multigraph? G2)
                                         (car x)
                                         x)
                                       m))
-                            (graph-neighbours G2)))))
-
-(define (num-adjacencies G u v)
-    @("Calculates the number of adjacencies (edges) between vertices u and v"
-      (@to "integer")
-      (@no-source))
-    (set-count (set-filter (lambda (x)
-                             (equal? (if (multigraph? G) (car x) x)
-                                     v))
-                           (graph-neighbours G u))))
+                            (graph-neighbours G2 m)))))
 
 (define (feas-rule-neighbours G1 G2 s n m)
   @("Feasibility rule which evaluates the neighbours of n and m which are in our partial mapping."
     "Such neighbours (n' and m') should have the same number of edges n->n' as m->m' and for each"
     "neighbour n' of n there should exist a corresponding neighbour m' of m that matches."
     "NOTE: This should hold true both ways, so neighbours of G1 and G2 are both tested."
+    (G1 "First graph")
+    (G2 "Second graph")
+    (s "A set of partial matches")
+    (n "The candidate from graph G1 to add to s")
+    (m "The candidate from graph G2 to add to s")
+    (gteq? "A greater than or equals comparator. This is to differentiate subgraph from graph isomorphism.")
     (@to "bool")
-    (@no-source))
+    (@no-source)
+    (@internal))
   ;; Defined as a function to avoid repetition where possible
   (define (candidate-neighbours-match? G1 G2 s n m)
     (call/cc
@@ -115,36 +103,123 @@
                                     (set-map (lambda (x) (cons (cdr x) (car x))) s)
                                     m n)))
 
-(define (syntactic-feasibility? s n m)
-  #t)
+(define (feas-rule-inout G1 G2 s n m gteq?)
+  @("Feasibility rule which evaluates the number of neighbours of our partial matches."
+    "The `in` rule specifies that the number of edges going into each of the candidate nodes must be equal."
+    "The `out` rule specifies that the number of edges going out of each candidate node must be equal."
+    "In both the `in` and `out` rules, we only consider the number of neighbours not already in our partial mapping."
+    (G1 "First graph")
+    (G2 "Second graph")
+    (s "A set of partial matches")
+    (n "The candidate from graph G1 to add to s")
+    (m "The candidate from graph G2 to add to s")
+    (gteq? "A greater than or equals comparator. This is to differentiate subgraph from graph isomorphism.")
+    (@to "bool")
+    (@no-source)
+    (@internal))
+  (let ([candidate-g1 (set-map car s)]
+        [candidate-g2 (set-map cdr s)])
+    ;; Destructive ops + copy are used in folds below as a minor optimization for when
+    ;; candidate-g1 and candidate-g2 are large
+    (let ([subgraph-g1 (set-fold (lambda (k x) (graph-vertex-remove! k x) k)
+                                 (graph-copy G1)
+                                 candidate-g1)]
+          [subgraph-g2 (set-fold (lambda (k x) (graph-vertex-remove! k x) k)
+                                 (graph-copy G2)
+                                 candidate-g2)])
+      ;; The first gteq? comparison is to single out multigraph-types. The second
+      ;; checks for the in and out rules (they're combined, otherwise they would
+      ;; refer to the indegree and outdegree of a the subgraphs aligning).
+      (and (gteq? (graph-degree G1 n weighted: #f)
+                  (graph-degree G2 m weighted: #f))
+           (gteq? (graph-degree subgraph-g1 n weighted: #f)
+                  (graph-degree subgraph-g2 m weighted: #f))))))
 
-(define (semantic-feasibility? s n m)
-  ;; TODO Implement a more appropriate semantic feasibility later
-  #t)
+(define (syntactic-feasibility? G1 G2 s n m gteq?)
+  @("Predicate which tests for syntactic feasibility."
+    "This is based off of the five rules listed in the original VF2 paper, however, there are some differences."
+    "Most notably, there are only three helper functions for five rules. This is because the original paper defined the steps specifically with regard to implementation details of the reference implementation in a very explicit fashion. The reason this implementation is shorter is because unlike the original paper, I have access to a `set` data structure, which simplifies some of the operations (e.g. no need for Pred or Succ, as sets are unordered)."
+    (G1 "First graph")
+    (G2 "Second graph")
+    (s "A set of partial matches")
+    (n "The candidate from graph G1 to add to s")
+    (m "The candidate from graph G2 to add to s")
+    (gteq? "A greater than or equals comparator. This is to differentiate subgraph from graph isomorphism.")
+    (@to "bool")
+    (@no-source)
+    (@internal))
+  (and (feas-rule-self G1 G2 s n m)
+       (feas-rule-neighbours G1 G2 s n m)
+       (feas-rule-inout G1 G2 s n m gteq?)))
 
-(define (graph-match G1 G2)
+(define-stream (graph-match G1 G2 gteq? semantic-feasibility?)
+  @("A procedure which performs the partial recursive matching between graphs G1 and G2."
+    "Returns a stream which contains a list of the set of isomorphisms between G1 and G2."
+    "Note that if subgraph matching is desired, gteq? must be >= and G1 is the graph that will be tested for subgraph isomorphism (i.e. only subgraphs in G1 are searched)."
+    (G1 "First graph")
+    (G2 "Second graph")
+    (gteq? "A greater than or equals comparator. This is to differentiate subgraph from graph isomorphism.")
+    (semantic-feasibility? "A predicate procedure for testing semantic feasibility between two graphs."
+                           "See documentation in graph-isomorphic? for more details.")
+    )
   (let match-loop ([s (make-set)])
    (cond
      [(set= (set-map cdr s)
             (graph-vertices G2))
       s]
-     [else (lazy-flatten
-             (foldl (lambda (matchings vertex-pair)
-                      (let ([n (car vertex-pair)]
-                            [m (cdr vertex-pair)])
-                        (if (and (syntactic-feasibility? s n m)
-                                 (semantic-feasibility? s n m))
-                          (lazy-seq (cons (match-loop (set-union s (set (cons n m))))
-                                          matchings))
-                          matchings)))
-                    (make-lazy-seq (lambda () '()))
-                    (candidate-pairs s G1 G2)))])))
+     [else (stream-flatten
+             (stream-fold (lambda (matchings vertex-pair)
+                            (let ([n (car vertex-pair)]
+                                  [m (cdr vertex-pair)])
+                              (if (and (syntactic-feasibility? G1 G2 s n m gteq?)
+                                       (semantic-feasibility? G1 G2 s n m))
+                                (stream-cons (match-loop (set-union s (set (cons n m))))
+                                             matchings)
+                                matchings)))
+                          stream-null
+                          (list->stream (candidate-pairs G1 G2 s))))])))
 
-(define (isomorphic? G1 G2 #!key (semantic #f))
+(define (graph-isomorphism-stream G1 G2 #!optional (semantic-feasibility?
+                                                     (lambda (G1 G2 s n m) #t)))
+  @("Returns a stream of all the isomorphisms from G1 to G2. If none exist, the stream will be null."
+    (G1 "First graph")
+    (G2 "Second graph")
+    (semantic-feasibility? "A predicate procedure for testing semantic feasibility between two graphs."
+                           "See argument information in `graph-isomorphic?` for more details.")
+    (@to "stream")
+    (@no-source))
+  (graph-match G1 G2 = semantic-feasibility?))
+
+(define graph-isomorphism-list G1 G2 #!optional (semantic-feasibility?
+                                                  (lambda (G1 G2 s n m) #t))
+  (stream->list (graph-isomorphism-stream G1 G2 semantic-feasibility?)))
+
+(define (subgraph-isomorphism-stream G1 G2 #!optional (semantic-feasibility?
+                                                     (lambda (G1 G2 s n m) #t)))
+  @("Returns a stream of all the isomorphisms from G1 to G2. If none exist, the stream will be null."
+    (G1 "First graph")
+    (G2 "Second graph")
+    (semantic-feasibility? "A predicate procedure for testing semantic feasibility between two graphs."
+                           "See argument information in `graph-isomorphic?` for more details.")
+    (@to "stream")
+    (@no-source))
+  (graph-match G1 G2 >= semantic-feasibility?))
+
+(define (subgraph-isomorphism-list G1 G2 #!optional (semantic-feasibility?
+                                                      (lambda (G1 G2 s n m) #t)))
+  (stream->list (graph-isomorphism-stream G1 G2 semantic-feasibility?)))
+
+(define (graph-isomorphic? G1 G2 #!optional (semantic-feasibility?
+                                              (lambda (G1 G2 s n m) #t)))
   @("Tests whether two graphs are isomorphic, using the VF2 algorithm."
     "See: http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=1323804"
     "If semantic is provided and non-false, then a semantic check is likewise performed."
-    (@to "set")
+    (G1 "First graph")
+    (G2 "Second graph")
+    (semantic-feasibility? "A predicate procedure for testing semantic feasibility between two graphs."
+                           "Should be a procedure taking arguments (G1 G2 s n m), where G1 and G2 are the two graphs, s is a set of cons pairs describing the partial matching between G1 and G2, and n and m are candidate vertices in G1 and G2 respectively."
+                           "The procedure should evaluate to #t iff the attributes of the vertices (or their edges) are semantically feasible. The default procedure for testing this always evaluates to #t, which effectively means attribute information is ignored.")
+    (@to "bool")
     (@no-source))
   (unless (eq? (graph-order G1)
                (graph-order G2))
@@ -154,5 +229,23 @@
                   (map (cute graph-degree G2 <>)
                        (set->list (graph-vertices G2))))
     #f)
-  ;; TODO Logic for finding a mapping
-  )
+  (stream-null? (graph-isomorphism-stream G1 G2 semantic-feasibility?)))
+
+(define (subgraph-isomorphic? G1 G2 #!optional (semantic-feasibility?
+                                              (lambda (G1 G2 s n m) #t)))
+  @("Performs the same tests as graph-isomorphic?, however tests for any subgraph isomorphism in G1 to G2."
+    "The only difference is that in graph-match, >= is passed instead of =."
+    "See graph-isomorphic? for more information on arguments."
+    (@to "bool")
+    (@no-source))
+  (unless (eq? (graph-order G1)
+               (graph-order G2))
+    #f)
+  (unless (equal? (map (cute graph-degree G1 <>)
+                       (set->list (graph-vertices G1)))
+                  (map (cute graph-degree G2 <>)
+                       (set->list (graph-vertices G2))))
+    #f)
+  (stream-null? (subgraph-isomorphism-stream G1 G2 semantic-feasibility?)))
+
+
