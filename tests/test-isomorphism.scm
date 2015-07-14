@@ -30,8 +30,8 @@
 (test-begin "Isomorphism")
 
 (test-group "Isomorphic Identity"
-  (test-generative ([us (gen-list-of (gen-vertex-obj) (range 0 20))]
-                    [vs (gen-list-of (gen-vertex-obj) (range 0 20))])
+  (test-generative ([us (gen-list-of (gen-vertex-obj) (range 0 5))]
+                    [vs (gen-list-of (gen-vertex-obj) (range 0 5))])
     (let ([G (make-graph)]
           [DG (make-digraph)]
           [edges (zip us vs)])
@@ -45,6 +45,25 @@
       (test-assert "Graph is isomorphic with itself"
         (graph-isomorphic? G G))
       (test-assert "DiGraph is isomorphic with itself"
-        (graph-isomorphic? DG DG)))))
+        (graph-isomorphic? DG DG)))
+
+    (test-generative ([us (gen-list-of (gen-vertex-obj) (range 0 5))]
+                      [vs (gen-list-of (gen-vertex-obj) (range 0 5))]
+                      [ids (gen-list-of (gen-int8) (range 0 5))])
+      (let ([MG (make-multigraph)]
+            [MDG (make-multidigraph)]
+            [edges (zip us vs ids)])
+        (for-each (lambda (graph-obj)
+                    (for-each (lambda (vertex-triplet)
+                                (graph-edge-add! graph-obj
+                                                 (car vertex-triplet)
+                                                 (cadr vertex-triplet)
+                                                 (caddr vertex-triplet)))
+                              edges))
+                  (list MG MDG))
+        (test-assert "Multigraph is isomorphic with itself"
+          (graph-isomorphic? MG MG))
+        (test-assert "Multidigraph is isomorphic with itself"
+          (graph-isomorphic? MDG MDG))))))
 
 (test-end "Isomorphism")

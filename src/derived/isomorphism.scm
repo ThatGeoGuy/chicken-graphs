@@ -166,7 +166,7 @@
    (cond
      [(set= (set-map cdr s)
             (graph-vertices G2))
-      s]
+      (stream s)]
      [else (stream-flatten
              (stream-fold (lambda (matchings vertex-pair)
                             (let ([n (car vertex-pair)]
