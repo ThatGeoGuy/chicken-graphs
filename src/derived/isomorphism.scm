@@ -34,10 +34,10 @@
         [T2 (set->list
               (set-difference (graph-vertices G2)
                               (set-map cdr s)))])
-    (if (not (null? T1))
-      (map (lambda (y)
-             (cons (car T1) y))
-           T2)
+    (if (not (null? T2))
+      (map (lambda (x)
+             (cons x (car T2)))
+           T1)
       '())))
 
 (define (feas-rule-self G1 G2 s n m)
@@ -247,5 +247,3 @@
                        (set->list (graph-vertices G2))))
     #f)
   (not (stream-null? (subgraph-isomorphism-stream G1 G2 semantic-feasibility?))))
-
-
