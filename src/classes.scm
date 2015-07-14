@@ -71,6 +71,7 @@
 (define-generic (graph-indegree g))
 (define-generic (graph-outdegree g))
 (define-generic (graph-degree g))
+(define-generic (graph-order g))
 
 ;;; Below are the default methods that aren't affected by specialization in graph type
 ;;; The reason for putting them here is to distinguish functionality based on type by
@@ -111,15 +112,6 @@
    (graph-attribute-set! new-graph keyword value)
    new-graph))
 
-(define-method (graph-vertex-exists? (g <abstract-graph>) v)
-    @("Tests whether vertex v exists in graph g"
-      (g "The graph to test")
-      (v "The vertex to search for")
-      (@to "bool")
-      (@no-source))
-    (let ([data (adjacency-table g)])
-     (hash-table-exists? data v)))
-
 (define-method (graph-vertex before: (g <abstract-graph>) vertex)
   (unless (graph-vertex-exists? g vertex)
     (error 'graph-vertex
@@ -130,6 +122,14 @@
 
 (define-method (graph-vertices (g <abstract-graph>))
   (list->set (hash-table-keys (graph-vertex-attr g))))
+
+(define-method (graph-vertex-exists? (g <abstract-graph>) v)
+    @("Tests whether vertex v exists in graph g"
+      (g "The graph to test")
+      (v "The vertex to search for")
+      (@to "bool")
+      (@no-source))
+    (set-in v (graph-vertices g)))
 
 (define-method (graph-vertex-add before: (g <abstract-graph>) vertex #!rest attr)
   (if (graph-vertex-exists? g vertex)
@@ -270,10 +270,18 @@
 (define-method (graph-degree (g <abstract-graph>) u #!key (weighted #t))
   @("Calculates the overall degree of the vertex u in graph g."
     "Represents the sum of the indegree and outdegrees of vertex u in graph g."
-    "NOTE: if the graph is weighted then the weighted indegree is calculated."
+    "NOTE: if the graph is weighted then the weighted degree is calculated by default."
     (g "The graph which we calculate the degree within")
     (u "The vertex of which we are interested in the degree of.")
+    (weighted "A boolean switch to specify if the weighted degree is desired.")
     (@to "number")
     (@no-source))
   (+ (graph-indegree g u weighted: weighted)
      (graph-outdegree g u weighted: weighted)))
+
+(define-method (graph-order (g <abstract-graph>))
+  @("Returns the order of the graph i.e. the number of vertices within the graph."
+    (g "The graph to compute the order of.")
+    (@to "integer")
+    (@no-source))
+  (set-count (graph-vertices g)))
