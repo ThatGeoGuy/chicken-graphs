@@ -5,8 +5,15 @@
 
 (compile -X hahn -O3 -d0 -s graphs.scm -j graphs -o graphs.so)
 (compile -X hahn -O2 -d0 -s graphs.import.scm)
+(compile -X hahn -O3 -d0 -s graphs-derived.scm -j graphs-derived -o graphs-derived.so)
+(compile -X hahn -O2 -d0 -s graphs-derived.import.scm)
 
 (install-extension
  'graphs
  `(,(dynld-name "graphs") ,(dynld-name "graphs.import"))
+ `((version "0.2")))
+
+(install-extension
+ 'graphs
+ `(,(dynld-name "graphs-derived") ,(dynld-name "graphs-derived.import"))
  `((version "0.2")))

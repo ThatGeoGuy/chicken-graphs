@@ -7,6 +7,7 @@
         "graphs.setup"
         "graphs.meta"
         "graphs.scm"
+        "graphs-derived.scm"
         "LICENSE")
 
  (license "BSD3")
