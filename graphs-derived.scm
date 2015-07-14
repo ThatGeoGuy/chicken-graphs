@@ -45,6 +45,7 @@
        graphs
        matchable
        srfi-1
+       srfi-69
        streams
        streams-derived)
   (import sets)
