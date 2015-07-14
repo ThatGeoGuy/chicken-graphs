@@ -160,8 +160,7 @@
     (G2 "Second graph")
     (gteq? "A greater than or equals comparator. This is to differentiate subgraph from graph isomorphism.")
     (semantic-feasibility? "A predicate procedure for testing semantic feasibility between two graphs."
-                           "See documentation in graph-isomorphic? for more details.")
-    )
+                           "See documentation in graph-isomorphic? for more details."))
   (let match-loop ([s (make-set)])
    (cond
      [(set= (set-map cdr s)
