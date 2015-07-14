@@ -40,7 +40,7 @@
   (make <graph>
         'gattr (parse-graph-attr attr)))
 
-(define-method (print-object (object <digraph>) port)
+(define-method (print-object (object <graph>) port)
   (display "Graph\n" port)
   (display "-----\n" port)
   (hash-table-for-each (graph-vertex-attr object)
