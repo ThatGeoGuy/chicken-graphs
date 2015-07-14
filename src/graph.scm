@@ -175,5 +175,5 @@
   (unless (equal? u v)
     (edge-update! g v u attr)))
 
-(define-method (graph-degree (g <graph>) u)
-  (graph-outdegree g u))
+(define-method (graph-degree (g <graph>) u #!key (weighted #t))
+  (graph-outdegree g u weighted: weighted))

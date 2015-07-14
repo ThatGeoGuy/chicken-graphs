@@ -183,5 +183,5 @@
   (unless (equal? u v)
     (multiedge-update! g v u id attr)))
 
-(define-method (graph-degree (g <multigraph>) u)
-  (graph-outdegree g u))
+(define-method (graph-degree (g <multigraph>) u #!key (weighted #t))
+  (graph-outdegree g u weighted: weighted))
