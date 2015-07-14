@@ -190,8 +190,8 @@
     (@no-source))
   (graph-match G1 G2 = semantic-feasibility?))
 
-(define graph-isomorphism-list G1 G2 #!optional (semantic-feasibility?
-                                                  (lambda (G1 G2 s n m) #t))
+(define (graph-isomorphism-list G1 G2 #!optional (semantic-feasibility?
+                                                  (lambda (G1 G2 s n m) #t)))
   (stream->list (graph-isomorphism-stream G1 G2 semantic-feasibility?)))
 
 (define (subgraph-isomorphism-stream G1 G2 #!optional (semantic-feasibility?
@@ -229,7 +229,7 @@
                   (map (cute graph-degree G2 <>)
                        (set->list (graph-vertices G2))))
     #f)
-  (stream-null? (graph-isomorphism-stream G1 G2 semantic-feasibility?)))
+  (not (stream-null? (graph-isomorphism-stream G1 G2 semantic-feasibility?))))
 
 (define (subgraph-isomorphic? G1 G2 #!optional (semantic-feasibility?
                                               (lambda (G1 G2 s n m) #t)))
@@ -246,6 +246,6 @@
                   (map (cute graph-degree G2 <>)
                        (set->list (graph-vertices G2))))
     #f)
-  (stream-null? (subgraph-isomorphism-stream G1 G2 semantic-feasibility?)))
+  (not (stream-null? (subgraph-isomorphism-stream G1 G2 semantic-feasibility?))))
 
 
