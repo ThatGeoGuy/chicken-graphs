@@ -69,6 +69,7 @@
    graph-indegree
    graph-outdegree
    graph-degree
+   graph-order
    )
 
   (import chicken scheme data-structures)
