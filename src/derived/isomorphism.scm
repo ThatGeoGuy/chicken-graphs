@@ -236,6 +236,9 @@
   @("Performs the same tests as graph-isomorphic?, however tests for any subgraph isomorphism in G1 to G2."
     "The only difference is that in graph-match, >= is passed instead of =."
     "See graph-isomorphic? for more information on arguments."
+    (G1 "First graph")
+    (G2 "Second graph")
+    (semantic-feasibility? "A predicate procedure for testing semantic feasibility between two graphs.")
     (@to "bool")
     (@no-source))
   (unless (eq? (graph-order G1)
