@@ -14,6 +14,6 @@
  `((version "0.2")))
 
 (install-extension
- 'graphs
+ 'graphs-derived
  `(,(dynld-name "graphs-derived") ,(dynld-name "graphs-derived.import"))
  `((version "0.2")))
