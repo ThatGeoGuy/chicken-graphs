@@ -128,14 +128,13 @@
                                  (graph-copy G2)
                                  candidate-g2)])
       ;; The first gteq? comparison is to single out multigraph-types. The second
-      ;; checks for the in and out rules (they're combined, otherwise they would
-      ;; refer to the indegree and outdegree of a the subgraphs aligning).
+      ;; checks for the outdegree, and the third the indegree.
       (and (gteq? (graph-degree G1 n weighted: #f)
                   (graph-degree G2 m weighted: #f))
-           (gteq? (graph-indegree subgraph-g1 n weighted: #f)
-                  (graph-indegree subgraph-g2 m weighted: #f))
            (gteq? (graph-outdegree subgraph-g1 n weighted: #f)
-                  (graph-outdegree subgraph-g2 m weighted: #f))))))
+                  (graph-outdegree subgraph-g2 m weighted: #f))
+           (gteq? (graph-indegree subgraph-g1 n weighted: #f)
+                  (graph-indegree subgraph-g2 m weighted: #f))))))
 
 (define (syntactic-feasibility? G1 G2 s n m gteq?)
   @("Predicate which tests for syntactic feasibility."
