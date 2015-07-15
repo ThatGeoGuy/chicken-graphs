@@ -132,8 +132,10 @@
       ;; refer to the indegree and outdegree of a the subgraphs aligning).
       (and (gteq? (graph-degree G1 n weighted: #f)
                   (graph-degree G2 m weighted: #f))
-           (gteq? (graph-degree subgraph-g1 n weighted: #f)
-                  (graph-degree subgraph-g2 m weighted: #f))))))
+           (gteq? (graph-indegree subgraph-g1 n weighted: #f)
+                  (graph-indegree subgraph-g2 m weighted: #f))
+           (gteq? (graph-outdegree subgraph-g1 n weighted: #f)
+                  (graph-outdegree subgraph-g2 m weighted: #f))))))
 
 (define (syntactic-feasibility? G1 G2 s n m gteq?)
   @("Predicate which tests for syntactic feasibility."
