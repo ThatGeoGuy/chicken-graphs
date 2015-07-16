@@ -30,14 +30,6 @@
 ;; NOTE This file holds some generic helpers and utilities for the graphs-derived
 ;; module. Do not confuse this with src/utils.scm!!!
 
-(define-stream (stream-flatten strm)
-  (cond [(stream-null? strm) stream-null]
-        [(stream? (stream-car strm))
-         (stream-append (stream-flatten (stream-car strm))
-                        (stream-flatten (stream-cdr strm)))]
-        [else (stream-cons (stream-car strm)
-                           (stream-flatten (stream-cdr strm)))]))
-
 (define (num-adjacencies G u v)
     @("Calculates the number of adjacencies (edges) between vertices u and v"
       (G "the graph to count adjacencies in")

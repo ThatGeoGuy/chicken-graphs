@@ -30,10 +30,10 @@
 (use hahn)
 (module graphs-derived
   (
-   graph-isomorphism-stream
-   subgraph-isomorphism-stream
-   graph-isomorphism-list
-   subgraph-isomorphism-list
+   graph-isomorphisms
+   subgraph-isomorphisms
+   graph-isomorphisms-list
+   subgraph-isomorphisms-list
    graph-isomorphic?
    subgraph-isomorphic?
    )
@@ -43,11 +43,10 @@
        coops
        coops-primitive-objects
        graphs
+       lazy-seq
        matchable
        srfi-1
-       srfi-69
-       streams
-       streams-derived)
+       srfi-69)
   (import sets)
 
   (include "src/utils")

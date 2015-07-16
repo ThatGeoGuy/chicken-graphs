@@ -153,7 +153,7 @@
        (feas-rule-neighbours G1 G2 s n m)
        (feas-rule-inout G1 G2 s n m gteq?)))
 
-(define-stream (graph-match G1 G2 gteq? semantic-feasibility?)
+(define (graph-match G1 G2 gteq? semantic-feasibility?)
   @("A procedure which performs the partial recursive matching between graphs G1 and G2."
     "Returns a stream which contains a list of the set of isomorphisms between G1 and G2."
     "Note that if subgraph matching is desired, gteq? must be >= and G1 is the graph that will be tested for subgraph isomorphism (i.e. only subgraphs in G1 are searched)."
@@ -162,24 +162,28 @@
     (gteq? "A greater than or equals comparator. This is to differentiate subgraph from graph isomorphism.")
     (semantic-feasibility? "A predicate procedure for testing semantic feasibility between two graphs."
                            "See documentation in graph-isomorphic? for more details."))
-  (let match-loop ([s (make-set)])
-   (cond
-     [(set= (set-map cdr s)
-            (graph-vertices G2))
-      (stream s)]
-     [else (stream-flatten
-             (stream-fold (lambda (matchings vertex-pair)
-                            (let ([n (car vertex-pair)]
-                                  [m (cdr vertex-pair)])
-                              (if (and (syntactic-feasibility? G1 G2 s n m gteq?)
-                                       (semantic-feasibility? G1 G2 s n m))
-                                (stream-cons (match-loop (set-union s (set (cons n m))))
-                                             matchings)
-                                matchings)))
-                          stream-null
-                          (list->stream (candidate-pairs G1 G2 s))))])))
+  (define (candidate-loop acc s c-pairs)
+    (lazy-seq
+      (cond
+        [(set= (set-map cdr s)
+               (graph-vertices G2))
+         (cons s acc)]
+        [(null? c-pairs) acc]
+        [else
+         (let ([n (caar c-pairs)]
+               [m (cdar c-pairs)])
+           (if (and (syntactic-feasibility? G1 G2 s n m gteq?)
+                    (semantic-feasibility? G1 G2 s n m))
+             (let ([next-set (set-union s (set (cons n m)))])
+               (candidate-loop (candidate-loop acc
+                                               s
+                                               (cdr c-pairs))
+                               next-set
+                               (candidate-pairs G1 G2 next-set)))
+             (lazy-seq (candidate-loop acc s (cdr c-pairs)))))])))
+  (candidate-loop (lazy-seq '()) (make-set) (candidate-pairs G1 G2 (make-set))))
 
-(define (graph-isomorphism-stream G1 G2 #!optional (semantic-feasibility?
+(define (graph-isomorphisms G1 G2 #!optional (semantic-feasibility?
                                                      (lambda (G1 G2 s n m) #t)))
   @("Returns a stream of all the isomorphisms from G1 to G2. If none exist, the stream will be null."
     (G1 "First graph")
@@ -190,11 +194,11 @@
     (@no-source))
   (graph-match G1 G2 = semantic-feasibility?))
 
-(define (graph-isomorphism-list G1 G2 #!optional (semantic-feasibility?
+(define (graph-isomorphisms-list G1 G2 #!optional (semantic-feasibility?
                                                   (lambda (G1 G2 s n m) #t)))
-  (stream->list (graph-isomorphism-stream G1 G2 semantic-feasibility?)))
+  (lazy-seq->list (graph-isomorphisms G1 G2 semantic-feasibility?)))
 
-(define (subgraph-isomorphism-stream G1 G2 #!optional (semantic-feasibility?
+(define (subgraph-isomorphisms G1 G2 #!optional (semantic-feasibility?
                                                      (lambda (G1 G2 s n m) #t)))
   @("Returns a stream of all the isomorphisms from G1 to G2. If none exist, the stream will be null."
     (G1 "First graph")
@@ -205,9 +209,9 @@
     (@no-source))
   (graph-match G1 G2 >= semantic-feasibility?))
 
-(define (subgraph-isomorphism-list G1 G2 #!optional (semantic-feasibility?
+(define (subgraph-isomorphisms-list G1 G2 #!optional (semantic-feasibility?
                                                       (lambda (G1 G2 s n m) #t)))
-  (stream->list (graph-isomorphism-stream G1 G2 semantic-feasibility?)))
+  (lazy-seq->list (subgraph-isomorphisms G1 G2 semantic-feasibility?)))
 
 (define (graph-isomorphic? G1 G2 #!optional (semantic-feasibility?
                                               (lambda (G1 G2 s n m) #t)))
@@ -221,18 +225,15 @@
                            "The procedure should evaluate to #t iff the attributes of the vertices (or their edges) are semantically feasible. The default procedure for testing this always evaluates to #t, which effectively means attribute information is ignored.")
     (@to "bool")
     (@no-source))
-  (unless (eq? (graph-order G1)
-               (graph-order G2))
-    #f)
-  (unless (equal? (map (cute graph-degree G1 <>)
-                       (set->list (graph-vertices G1)))
-                  (map (cute graph-degree G2 <>)
-                       (set->list (graph-vertices G2))))
-    #f)
-  (not (stream-null? (graph-isomorphism-stream G1 G2 semantic-feasibility?))))
+  (cond
+    [(not (eqv? (graph-order G1)
+               (graph-order G2)))
+     #f]
+    [else
+     (not (lazy-null? (graph-isomorphisms G1 G2 semantic-feasibility?)))]))
 
 (define (subgraph-isomorphic? G1 G2 #!optional (semantic-feasibility?
-                                              (lambda (G1 G2 s n m) #t)))
+                                                 (lambda (G1 G2 s n m) #t)))
   @("Performs the same tests as graph-isomorphic?, however tests for any subgraph isomorphism in G1 to G2."
     "The only difference is that in graph-match, >= is passed instead of =."
     "See graph-isomorphic? for more information on arguments."
@@ -241,12 +242,9 @@
     (semantic-feasibility? "A predicate procedure for testing semantic feasibility between two graphs.")
     (@to "bool")
     (@no-source))
-  (unless (eq? (graph-order G1)
-               (graph-order G2))
-    #f)
-  (unless (equal? (map (cute graph-degree G1 <>)
-                       (set->list (graph-vertices G1)))
-                  (map (cute graph-degree G2 <>)
-                       (set->list (graph-vertices G2))))
-    #f)
-  (not (stream-null? (subgraph-isomorphism-stream G1 G2 semantic-feasibility?))))
+  (cond
+    [(not (eq? (graph-order G1)
+               (graph-order G2)))
+     #f]
+    [else
+     (not (lazy-null? (subgraph-isomorphisms G1 G2 semantic-feasibility?)))]))
