@@ -180,7 +180,7 @@
                                                (cdr c-pairs))
                                next-set
                                (candidate-pairs G1 G2 next-set)))
-             (lazy-seq (candidate-loop acc s (cdr c-pairs)))))])))
+             (candidate-loop acc s (cdr c-pairs))))])))
   (candidate-loop (lazy-seq '()) (make-set) (candidate-pairs G1 G2 (make-set))))
 
 (define (graph-isomorphisms G1 G2 #!optional (semantic-feasibility?
@@ -227,10 +227,9 @@
     (@no-source))
   (cond
     [(not (eqv? (graph-order G1)
-               (graph-order G2)))
+                (graph-order G2)))
      #f]
-    [else
-     (not (lazy-null? (graph-isomorphisms G1 G2 semantic-feasibility?)))]))
+    [else (not (lazy-null? (graph-isomorphisms G1 G2 semantic-feasibility?)))]))
 
 (define (subgraph-isomorphic? G1 G2 #!optional (semantic-feasibility?
                                                  (lambda (G1 G2 s n m) #t)))
@@ -246,5 +245,4 @@
     [(not (eq? (graph-order G1)
                (graph-order G2)))
      #f]
-    [else
-     (not (lazy-null? (subgraph-isomorphisms G1 G2 semantic-feasibility?)))]))
+    [else (not (lazy-null? (subgraph-isomorphisms G1 G2 semantic-feasibility?)))]))
