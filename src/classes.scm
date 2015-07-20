@@ -124,12 +124,12 @@
   (list->set (hash-table-keys (graph-vertex-attr g))))
 
 (define-method (graph-vertex-exists? (g <abstract-graph>) v)
-    @("Tests whether vertex v exists in graph g"
-      (g "The graph to test")
-      (v "The vertex to search for")
-      (@to "bool")
-      (@no-source))
-    (set-in v (graph-vertices g)))
+  @("Tests whether vertex v exists in graph g"
+    (g "The graph to test")
+    (v "The vertex to search for")
+    (@to "bool")
+    (@no-source))
+  (set-in v (graph-vertices g)))
 
 (define-method (graph-vertex-add before: (g <abstract-graph>) vertex #!rest attr)
   (if (graph-vertex-exists? g vertex)
