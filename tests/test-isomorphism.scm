@@ -30,41 +30,25 @@
 (test-begin "Isomorphism")
 
 (test-group "Isomorphic Identity"
-  (test-generative ([vs (gen-list-of (gen-vertex-obj) (range 0 6))])
-    (let ([G (make-graph)]
-          [DG (make-digraph)]
-          [edges (if (not (null? vs))
-                   (zip vs (cdr vs))
-                   '())])
-      (for-each (lambda (graph-obj)
-                  (for-each (lambda (vertex-pair)
-                              (graph-edge-add! graph-obj
-                                               (car vertex-pair)
-                                               (cadr vertex-pair)))
-                            edges))
-                (list G DG))
-      (test-assert "Graph is isomorphic with itself"
-        (graph-isomorphic? G G))
-      (test-assert "DiGraph is isomorphic with itself"
-        (graph-isomorphic? DG DG)))
+  (test-generative ([G (gen-graph)])
+    (test-assert "Any graph should be isomorphic to itself"
+      (graph-isomorphic? G G))))
 
-    (test-generative ([vs (gen-list-of (gen-vertex-obj) (range 0 6))])
-      (let ([MG (make-multigraph)]
-            [MDG (make-multidigraph)]
-            [edges (if (not (null? '()))
-                     (zip vs (cdr vs))
-                     '())])
-        (for-each (lambda (graph-obj)
-                    (for-each (lambda (vertex-triplet)
-                                (graph-edge-add! graph-obj
-                                                 (car vertex-triplet)
-                                                 (cadr vertex-triplet)
-                                                 1))
-                              edges))
-                  (list MG MDG))
-        (test-assert "MultiGraph is isomorphic with itself"
-          (graph-isomorphic? MG MG))
-        (test-assert "MultiDiGraph is isomorphic with itself"
-          (graph-isomorphic? MDG MDG))))))
+(test-group "Isomorphic Associativity"
+  (test-generative ([G1 (gen-graph 5)]
+                    [G2 (gen-graph 5)]
+                    [G3 (gen-graph 5)])
+    (test-assert "If G1 <=> G2 and G2 <=> G3 then G1 <=> G3 else G1 !=> G3"
+      (cond
+        [(and (graph-isomorphic? G1 G2)
+              (graph-isomorphic? G2 G3))
+         (graph-isomorphic? G1 G3)]
+        [(xor (graph-isomorphic? G1 G2)
+              (graph-isomorphic? G2 G3))
+         (not (graph-isomorphic? G1 G3))]
+        ;; The else case is ambiguous; if G1 and G2 are not isomorphic
+        ;; to G3, then there is no guarantee that G1 is not isomorphic
+        ;; to G3.
+        [else #t]))))
 
 (test-end "Isomorphism")

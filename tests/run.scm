@@ -39,6 +39,16 @@
 (use graphs
      graphs-derived)
 
+(define (xor #!rest args)
+  (call/cc
+    (lambda (k)
+      (foldl (lambda (knil x)
+               (if (not (and knil x))
+                 (or knil x)
+                 (k #f)))
+             #f
+             args))))
+
 (define (gen-vertex-obj)
   (gen-sample-of
     (lambda ()
@@ -53,5 +63,41 @@
 (include "test-graph.scm")
 (include "test-multidigraph.scm")
 (include "test-multigraph.scm")
+
+;; Generates empty graphs => assumes make functions work by default
+(define (gen-empty-graph-type)
+  (gen-sample-of make-graph
+                 make-digraph
+                 make-multigraph
+                 make-multidigraph))
+
+;; Generates graph with random vertices / edges
+;; Assumes graph-edge-add! works, which is why this is _after_
+;; including test-(multi)(di)graph.scm
+(define (gen-graph #!optional (order (range 0 10)))
+  (lambda ()
+    (let ([G ((gen-empty-graph-type))]
+          [order ((gen-fixnum (if (pair? order)
+                                order
+                                (range 0 order))))])
+      (let* ([vs ((gen-list-of (gen-vertex-obj) order))]
+             [ids ((gen-list-of (gen-fixnum
+                                  (range 0 (length vs)))))])
+        (for-each
+          (lambda (v-id-pair)
+            (let ([v (car v-id-pair)]
+                  [id (cadr v-id-pair)])
+              (for-each (lambda (u)
+                          (when ((gen-bool))
+                            (cond
+                              [(and (multigraph? G)
+                                    (not (graph-adjacent? G u v id)))
+                               (graph-edge-add! G u v id)]
+                              [(not (graph-adjacent? G u v))
+                               (graph-edge-add! G u v)])))
+                        vs)))
+          (zip vs ids))
+        G))))
+
 (include "test-isomorphism.scm")
 (test-exit)
