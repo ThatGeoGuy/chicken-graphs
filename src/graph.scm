@@ -31,6 +31,7 @@
 ;;; defined in the graphs module:
 ;;;
 ;;;     src/utils
+;;;     src/low-level
 ;;;     src/classes
 ;;;     src/digraph
 ;;;
@@ -39,7 +40,7 @@
   (make <graph>
         'gattr (parse-graph-attr attr)))
 
-(define-method (print-object (object <digraph>) port)
+(define-method (print-object (object <graph>) port)
   (display "Graph\n" port)
   (display "-----\n" port)
   (hash-table-for-each (graph-vertex-attr object)
@@ -174,5 +175,5 @@
   (unless (equal? u v)
     (edge-update! g v u attr)))
 
-(define-method (graph-degree (g <graph>) u)
-  (graph-outdegree g u))
+(define-method (graph-degree (g <graph>) u #!key (weighted #t))
+  (graph-outdegree g u weighted: weighted))

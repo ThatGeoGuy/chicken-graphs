@@ -27,8 +27,13 @@
 ;;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
-;;; NOTE: Bear in mind all the functions in src/utils.scm need to be defined
-;;; in order for the methods / procedures defined here to work.
+;;; NOTE: Bear in mind all the procedures in the following files must first be
+;;; defined in the graphs module:
+;;;
+;;;     src/utils
+;;;     src/low-level
+;;;     src/classes
+;;;
 
 (define (make-digraph #!rest attr)
   (make <digraph>

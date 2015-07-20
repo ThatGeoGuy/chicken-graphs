@@ -31,6 +31,7 @@
 ;;; defined in the graphs module:
 ;;;
 ;;;     src/utils
+;;;     src/low-level
 ;;;     src/classes
 ;;;
 
@@ -101,7 +102,9 @@
      #f]
     [(set-in v (set-map car (graph-neighbours g u)))
      (if id
-       (set-map cadr (graph-neighbours g u))
+       (set-in id (set-map cadr (set-filter (lambda (x)
+                                              (equal? (car x) v))
+                                            (graph-neighbours g u))))
        #t)]
     [else #f]))
 

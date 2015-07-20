@@ -69,6 +69,7 @@
    graph-indegree
    graph-outdegree
    graph-degree
+   graph-order
    )
 
   (import chicken scheme data-structures)
@@ -81,6 +82,7 @@
   (import sets)
 
   (include "src/utils")
+  (include "src/low-level")
   (include "src/classes")
   (include "src/multidigraph")
   (include "src/multigraph")

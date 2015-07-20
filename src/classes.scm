@@ -71,6 +71,7 @@
 (define-generic (graph-indegree g))
 (define-generic (graph-outdegree g))
 (define-generic (graph-degree g))
+(define-generic (graph-order g))
 
 ;;; Below are the default methods that aren't affected by specialization in graph type
 ;;; The reason for putting them here is to distinguish functionality based on type by
@@ -111,15 +112,6 @@
    (graph-attribute-set! new-graph keyword value)
    new-graph))
 
-(define-method (graph-vertex-exists? (g <abstract-graph>) v)
-    @("Tests whether vertex v exists in graph g"
-      (g "The graph to test")
-      (v "The vertex to search for")
-      (@to "bool")
-      (@no-source))
-    (let ([data (adjacency-table g)])
-     (hash-table-exists? data v)))
-
 (define-method (graph-vertex before: (g <abstract-graph>) vertex)
   (unless (graph-vertex-exists? g vertex)
     (error 'graph-vertex
@@ -130,6 +122,14 @@
 
 (define-method (graph-vertices (g <abstract-graph>))
   (list->set (hash-table-keys (graph-vertex-attr g))))
+
+(define-method (graph-vertex-exists? (g <abstract-graph>) v)
+    @("Tests whether vertex v exists in graph g"
+      (g "The graph to test")
+      (v "The vertex to search for")
+      (@to "bool")
+      (@no-source))
+    (set-in v (graph-vertices g)))
 
 (define-method (graph-vertex-add before: (g <abstract-graph>) vertex #!rest attr)
   (if (graph-vertex-exists? g vertex)
@@ -211,7 +211,7 @@
    (vertex-update! new-graph vertex attr)
    new-graph))
 
-(define-method (graph-vertex-update! (g <abstract-graph>) vertex #!rest attr)
+(define-method (graph-vertex-update! before: (g <abstract-graph>) vertex #!rest attr)
   (if (not (graph-vertex-exists? g vertex))
     (error 'graph-vertex-update!
            "Cannot update vertex - does not exist" vertex)))
@@ -224,7 +224,7 @@
     (@no-source))
   (vertex-update! g vertex attr))
 
-(define-method (graph-indegree (g <abstract-graph>) u)
+(define-method (graph-indegree (g <abstract-graph>) u #!key (weighted #t))
   @("Calculates the indegree of a vertex u in graph g."
     (g "The graph which we calculate the indegree within")
     (u "The vertex of which we are interested in the indegree of.")
@@ -234,41 +234,54 @@
    (hash-table-fold data
                     (lambda (key val knil)
                       (let ([ws (set-map (compose (cute hash-table-ref/default
-                                                        <>
-                                                        weight:
-                                                        1)
+                                                        <> weight: 1)
                                                   cdr)
                                          (set-filter (lambda (x)
                                                        (equal? u (car x)))
                                                      val))])
-                        (if (not (set-null? ws))
-                          (set-fold + knil ws)
-                          knil)))
+                        (cond
+                          [(and weighted
+                                (not (set-null? ws)))
+                           (set-fold + knil ws)]
+                          [(not (set-null? ws))
+                           (set-count ws)]
+                          [else knil])))
                     0)))
 
-(define-method (graph-outdegree (g <abstract-graph>) u)
+(define-method (graph-outdegree (g <abstract-graph>) u #!key (weighted #t))
   @("Calculates the outdegree of a vertex u in graph g."
     (g "The graph which we calculate the outdegree within")
     (u "The vertex of which we are interested in the outdegree of.")
     (@to "number")
     (@no-source))
-  (let ([out-edges (hash-table-ref (adjacency-table g) u)])
-   (set-fold +
-             0
-             (set-map (compose (cute hash-table-ref/default
-                                     <>
-                                     weight:
-                                     1)
-                               cdr)
-                      out-edges))))
+  (let* ([out-edges (hash-table-ref (adjacency-table g) u)]
+         [ws (map (compose (cute hash-table-ref/default
+                                 <> weight: 1)
+                           cdr)
+                  (set->list out-edges))])
+    (cond
+      [(and weighted
+            (not (set-null? ws)))
+       (fold + 0 ws)]
+      [(not (set-null? ws))
+       (length ws)]
+      [else 0])))
 
-(define-method (graph-degree (g <abstract-graph>) u)
+(define-method (graph-degree (g <abstract-graph>) u #!key (weighted #t))
   @("Calculates the overall degree of the vertex u in graph g."
     "Represents the sum of the indegree and outdegrees of vertex u in graph g."
-    "NOTE: if the graph is weighted then the weighted indegree is calculated."
+    "NOTE: if the graph is weighted then the weighted degree is calculated by default."
     (g "The graph which we calculate the degree within")
     (u "The vertex of which we are interested in the degree of.")
+    (weighted "A boolean switch to specify if the weighted degree is desired.")
     (@to "number")
     (@no-source))
-  (+ (graph-indegree g u)
-     (graph-outdegree g u)))
+  (+ (graph-indegree g u weighted: weighted)
+     (graph-outdegree g u weighted: weighted)))
+
+(define-method (graph-order (g <abstract-graph>))
+  @("Returns the order of the graph i.e. the number of vertices within the graph."
+    (g "The graph to compute the order of.")
+    (@to "integer")
+    (@no-source))
+  (set-count (graph-vertices g)))

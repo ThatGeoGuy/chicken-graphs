@@ -31,6 +31,7 @@
 ;;; defined in the graphs module:
 ;;;
 ;;;     src/utils
+;;;     src/low-level
 ;;;     src/classes
 ;;;     src/multidigraph
 ;;;
@@ -69,7 +70,9 @@
     [(and (set-in v (set-map car (graph-neighbours g u)))
           (set-in u (set-map car (graph-neighbours g v))))
      (if id
-       (set-in id (set-map cadr (graph-neighbours g u)))
+       (set-in id (set-map cadr (set-filter (lambda (x)
+                                              (equal? (car x) v))
+                                            (graph-neighbours g u))))
        #t)]
     [(or (set-in v (set-map car (graph-neighbours g u)))
          (set-in u (set-map car (graph-neighbours g v))))
@@ -182,5 +185,5 @@
   (unless (equal? u v)
     (multiedge-update! g v u id attr)))
 
-(define-method (graph-degree (g <multigraph>) u)
-  (graph-outdegree g u))
+(define-method (graph-degree (g <multigraph>) u #!key (weighted #t))
+  (graph-outdegree g u weighted: weighted))
