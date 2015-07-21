@@ -28,6 +28,12 @@
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
 (define (candidate-pairs G1 G2 s)
+  (define (gen-candidates T1 m)
+    (lazy-seq
+      (if (null? T1)
+        '()
+        (cons (cons (car T1) m)
+              (gen-candidates (cdr T1) m)))))
   (let ([T1 (set->list
               (set-difference (graph-vertices G1)
                               (set-map car s)))]
@@ -35,10 +41,8 @@
               (set-difference (graph-vertices G2)
                               (set-map cdr s)))])
     (if (not (null? T2))
-      (map (lambda (x)
-             (cons x (car T2)))
-           T1)
-      '())))
+      (gen-candidates T1 (car T2))
+      (lazy-seq '()))))
 
 (define (feas-rule-self G1 G2 s n m)
   @("Tests whether or not there are the same number of self loops in G1 and G2 at vertices n and m."
@@ -117,24 +121,10 @@
     (@to "bool")
     (@no-source)
     (@internal))
-  (let ([candidate-g1 (set-map car s)]
-        [candidate-g2 (set-map cdr s)])
-    ;; Destructive ops + copy are used in folds below as a minor optimization for when
-    ;; candidate-g1 and candidate-g2 are large
-    (let ([subgraph-g1 (set-fold (lambda (k x) (graph-vertex-remove! k x) k)
-                                 (graph-copy G1)
-                                 candidate-g1)]
-          [subgraph-g2 (set-fold (lambda (k x) (graph-vertex-remove! k x) k)
-                                 (graph-copy G2)
-                                 candidate-g2)])
-      ;; The first gteq? comparison is to single out multigraph-types. The second
-      ;; checks for the outdegree, and the third the indegree.
-      (and (gteq? (graph-degree G1 n weighted: #f)
-                  (graph-degree G2 m weighted: #f))
-           (gteq? (graph-outdegree subgraph-g1 n weighted: #f)
-                  (graph-outdegree subgraph-g2 m weighted: #f))
-           (gteq? (graph-indegree subgraph-g1 n weighted: #f)
-                  (graph-indegree subgraph-g2 m weighted: #f))))))
+  (and (gteq? (graph-outdegree G1 n weighted: #f)
+              (graph-outdegree G2 m weighted: #f))
+       (gteq? (graph-indegree G1 n weighted: #f)
+              (graph-indegree G2 m weighted: #f))))
 
 (define (syntactic-feasibility? G1 G2 s n m gteq?)
   @("Predicate which tests for syntactic feasibility."
@@ -161,26 +151,28 @@
     (G2 "Second graph")
     (gteq? "A greater than or equals comparator. This is to differentiate subgraph from graph isomorphism.")
     (semantic-feasibility? "A predicate procedure for testing semantic feasibility between two graphs."
-                           "See documentation in graph-isomorphic? for more details."))
+                           "See documentation in graph-isomorphic? for more details.")
+    (@to "lazy-seq")
+    (@no-source))
   (define (candidate-loop acc s c-pairs)
     (lazy-seq
       (cond
         [(set= (set-map cdr s)
                (graph-vertices G2))
          (cons s acc)]
-        [(null? c-pairs) acc]
+        [(lazy-null? c-pairs) acc]
         [else
-         (let ([n (caar c-pairs)]
-               [m (cdar c-pairs)])
+         (let ([n (car (lazy-head c-pairs))]
+               [m (cdr (lazy-head c-pairs))])
            (if (and (syntactic-feasibility? G1 G2 s n m gteq?)
                     (semantic-feasibility? G1 G2 s n m))
              (let ([next-set (set-union s (set (cons n m)))])
                (candidate-loop (candidate-loop acc
                                                s
-                                               (cdr c-pairs))
+                                               (lazy-tail c-pairs))
                                next-set
                                (candidate-pairs G1 G2 next-set)))
-             (candidate-loop acc s (cdr c-pairs))))])))
+             (candidate-loop acc s (lazy-tail c-pairs))))])))
   (candidate-loop (lazy-seq '()) (make-set) (candidate-pairs G1 G2 (make-set))))
 
 (define (graph-isomorphisms G1 G2 #!optional (semantic-feasibility?
