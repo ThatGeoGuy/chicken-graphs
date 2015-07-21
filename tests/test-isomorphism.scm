@@ -32,7 +32,18 @@
 (test-group "Isomorphic Identity"
   (test-generative ([G (gen-graph)])
     (test-assert "Any graph should be isomorphic to itself"
-      (graph-isomorphic? G G))))
+      (graph-isomorphic? G G)))
+  (test-generative ([G1 (gen-graph)]
+                    [v (gen-vertex-obj)])
+    (let ([G2 (graph-copy G1)])
+     (set-for-each (lambda (x)
+                     (when ((gen-bool))
+                       (if (multigraph? G2)
+                         (graph-edge-add! G2 x v 1)
+                         (graph-edge-add! G2 x v))))
+                   (graph-vertices G2))
+     (test-assert "A graph should be subgraph-isomorphic with itself plus additional edges."
+       (subgraph-isomorphic? G2 G1)))))
 
 (test-group "Isomorphic Associativity"
   (test-generative ([G1 (gen-graph 5)]

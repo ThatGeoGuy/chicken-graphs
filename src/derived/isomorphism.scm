@@ -233,8 +233,4 @@
     (semantic-feasibility? "A predicate procedure for testing semantic feasibility between two graphs.")
     (@to "bool")
     (@no-source))
-  (cond
-    [(not (eq? (graph-order G1)
-               (graph-order G2)))
-     #f]
-    [else (not (lazy-null? (subgraph-isomorphisms G1 G2 semantic-feasibility?)))]))
+  (not (lazy-null? (subgraph-isomorphisms G1 G2 semantic-feasibility?))))
