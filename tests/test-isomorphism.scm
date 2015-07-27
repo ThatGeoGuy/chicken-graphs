@@ -36,7 +36,7 @@
     (test-assert "Any graph should be subgraph-isomorphic to itself"
       (subgraph-isomorphic? G G)))
 
-  (test-generative ([G1 (gen-graph (range 2 10))] ; must have at least 1 vertex
+  (test-generative ([G1 (gen-graph (range 5 10))] ; must have at least 1 vertex
                     [v (gen-vertex-obj)])
     (let ([G2 (graph-copy G1)])
      (set-for-each (lambda (x)

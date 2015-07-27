@@ -230,7 +230,8 @@
     (u "The vertex of which we are interested in the indegree of.")
     (@to "number")
     (@no-source))
-  (let ([data (adjacency-table g)])
+  (let ([data (adjacency-table g)]
+        [vertices (set->list (graph-vertices g))])
    (hash-table-fold data
                     (lambda (key val knil)
                       (let ([ws (map (compose (cute hash-table-ref/default
@@ -242,9 +243,9 @@
                         (cond
                           [(and weighted
                                 (not (set-null? ws)))
-                           (foldl + knil ws)]
+                           (apply + knil ws)]
                           [(not (null? ws))
-                           (length ws)]
+                           (+ knil (length ws))]
                           [else knil])))
                     0)))
 
