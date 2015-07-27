@@ -139,13 +139,8 @@
     (weight "Specific keyword in the edge attributes that corresponds to the edge weight.")
     (@to "<multidigraph>")
     (@no-source))
-  (let ([new-graph (graph-copy g)]
-        [attr (cons id: (cons id attr))])
-    (unless (graph-vertex-exists? new-graph u)
-      (graph-vertex-add! new-graph u))
-    (unless (graph-vertex-exists? new-graph v)
-      (graph-vertex-add! new-graph v))
-    (multiedge-add! new-graph u v attr)
+  (let ([new-graph (graph-copy g)])
+    (apply graph-edge-add! new-graph u v attr)
     new-graph))
 
 (define-method (graph-edge-add! before: (g <multidigraph>) u v id #!rest attr)
@@ -165,9 +160,9 @@
     (weight "Specific keyword in the edge attributes that corresponds to the edge weight.")
     (@no-source))
   (let ([attr (cons id: (cons id attr))])
-   (if (not (graph-vertex-exists? g u))
+   (unless (graph-vertex-exists? g u)
      (graph-vertex-add! g u))
-   (if (not (graph-vertex-exists? g v))
+   (unless (graph-vertex-exists? g v)
      (graph-vertex-add! g v))
    (multiedge-add! g u v attr)))
 
@@ -187,9 +182,7 @@
     (@to "<multidigraph>")
     (@no-source))
   (let ([new-graph (graph-copy g)])
-   (cond
-     [id (multiedge-remove! new-graph u v id)]
-     [else (edge-remove! new-graph u v)])
+   (graph-edge-remove! new-graph u v id)
    new-graph))
 
 (define-method (graph-edge-remove! before: (g <multidigraph>) u v #!optional (id #f))
@@ -223,7 +216,7 @@
     (@to "<graph>")
     (@no-source))
   (let ([new-graph (graph-copy g)])
-   (multiedge-update! new-graph u v id attr)
+   (apply graph-edge-update! new-graph u v id attr)
    new-graph))
 
 (define-method (graph-edge-update! before: (g <graph>) u v id #!rest attr)
