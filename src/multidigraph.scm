@@ -122,12 +122,6 @@
                       edges)])
     (hash-table->alist (cdr e))))
 
-(define-method (graph-edge-add before: (g <multidigraph>) u v id #!rest attr)
-  (when (graph-adjacent? g u v id)
-    (error 'graph-edge-add
-           "Cannot add edge - An edge u->v already exists with provided id"
-           u v id)))
-
 (define-method (graph-edge-add (g <multidigraph>) u v id #!rest attr)
   @("Adds an edge u->v that does not already exist within the graph g. (Non-destructive)"
     "If the graph is not a digraph, also adds v->u to balance the graph."
@@ -166,12 +160,6 @@
      (graph-vertex-add! g v))
    (multiedge-add! g u v attr)))
 
-(define-method (graph-edge-remove before: (g <multidigraph>) u v #!optional (id #f))
-  (unless (graph-adjacent? g u v id)
-    (error 'graph-edge-remove
-           "Cannot remove edge - No edge from u->v exists with id"
-           u v id)))
-
 (define-method (graph-edge-remove (g <multidigraph>) u v #!optional (id #f))
   @("Removes an edge u->v and v->u with identity `id` from a graph. (Non-destructive)"
     "If no edge with the corresponding ID can be found, an error is raised."
@@ -202,10 +190,6 @@
   (cond
     [id (multiedge-remove! g u v id)]
     [else (edge-remove! g u v)]))
-
-(define-method (graph-edge-update before: (g <multidigraph>) u v id #!rest attr)
-    (unless (graph-adjacent? g u v id)
-      (error 'graph-edge-update "Cannot update edge, does not exist" u v id)))
 
 (define-method (graph-edge-update (g <multidigraph>) u v id #!rest attr)
   @("Updates the edges u->v and v->u with ID := `id` present within a multidigraph g. (Non-destructive)"

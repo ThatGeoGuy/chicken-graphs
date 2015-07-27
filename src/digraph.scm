@@ -93,10 +93,6 @@
                       edges)])
     (hash-table->alist (cdr e))))
 
-(define-method (graph-edge-add before: (g <digraph>) u v #!rest attr)
-  (when (graph-adjacent? g u v)
-    (error 'graph-edge-add "Cannot add new edge - already exists" u v)))
-
 (define-method (graph-edge-add (g <digraph>) u v #!rest attr)
   @("Adds an edge u->v that does not already exist within the digraph g. (Non-destructive)"
     "First checks if the edge exists within the digraph. If it does, it raises an error."
@@ -128,10 +124,6 @@
     (graph-vertex-add! g v))
   (edge-add! g u v attr))
 
-(define-method (graph-edge-remove before: (g <digraph>) u v)
-  (unless (graph-adjacent? g u v)
-    (error 'graph-edge-remove "Cannot remove edge - doesn't exist" u v)))
-
 (define-method (graph-edge-remove (g <digraph>) u v)
   @("Removes an edge u->v from a digraph. (Non-destructive)"
     "First checks if the edge exists within the digraph. If it does not, it raises an error."
@@ -158,10 +150,6 @@
     (@to "<digraph>")
     (@no-source))
   (edge-remove! g u v))
-
-(define-method (graph-edge-update before: (g <digraph>) u v #!rest attr)
-    (unless (graph-adjacent? g u v)
-      (error 'graph-edge-update "Cannot update edge, does not exist" u v)))
 
 (define-method (graph-edge-update (g <digraph>) u v #!rest attr)
   @("Updates an edge u->v present within a digraph g. (Non-destructive)"
