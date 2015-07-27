@@ -113,14 +113,6 @@
                                           (hash-table-ref data u))))))
 
 (define (edge-update! g u v attr)
-  (let ([reserved '(indeg: outdeg:)])
-   (for-each (lambda (key)
-               (when (any (cute eq? key <>) attr)
-                 (error 'edge-update!
-                        "Cannot update reserved attribute"
-                        reserved
-                        attr)))
-             reserved))
   (let* ([data (adjacency-table g)]
          [e    (set-find (lambda (x)
                            (equal? (car x) v))
