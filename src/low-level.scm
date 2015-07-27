@@ -126,10 +126,14 @@
                                   edge-attr))))
 
 (define (multiedge-update! g u v id attr)
-  (when (any (cute eq? id: <>) attr)
-    (error 'multiedge-update!
-           "Cannot update ID attribute once set. Remove edge then add again"
-           attr))
+  (let ([reserved '(id: indeg: outdeg:)])
+   (for-each (lambda (key)
+               (when (any (cute eq? key <>) attr)
+                 (error 'multiedge-update!
+                        "Cannot update reserved attribute"
+                        reserved
+                        attr)))
+             reserved))
   (let* ([data (adjacency-table g)]
          [edges (set-filter (lambda (x)
                               (equal? (car x) v))
