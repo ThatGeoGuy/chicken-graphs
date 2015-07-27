@@ -107,11 +107,7 @@
     (@to "<digraph>")
     (@no-source))
   (let ([new-graph (graph-copy g)])
-   (unless (graph-vertex-exists? new-graph u)
-     (graph-vertex-add! new-graph u))
-   (unless (graph-vertex-exists? new-graph v)
-     (graph-vertex-add! new-graph v))
-   (edge-add! new-graph u v attr)
+   (apply graph-edge-add! new-graph u v attr)
    new-graph))
 
 (define-method (graph-edge-add! before: (g <digraph>) u v #!rest attr)
@@ -145,7 +141,7 @@
     (@to "<digraph>")
     (@no-source))
   (let ([new-graph (graph-copy g)])
-   (edge-remove! new-graph u v)
+   (graph-edge-remove! new-graph u v)
    new-graph))
 
 (define-method (graph-edge-remove! before: (g <digraph>) u v)
@@ -176,7 +172,7 @@
     (@to "<digraph>")
     (@no-source))
   (let ([new-graph (graph-copy g)])
-   (edge-update! g u v attr)
+   (apply graph-edge-update! new-graph u v attr)
    new-graph))
 
 (define-method (graph-edge-update! before: (g <digraph>) u v #!rest attr)
