@@ -82,8 +82,8 @@
   (import sets)
 
   (include "src/utils")
-  (include "src/low-level")
   (include "src/classes")
+  (include "src/low-level")
   (include "src/multidigraph")
   (include "src/multigraph")
   (include "src/digraph")
