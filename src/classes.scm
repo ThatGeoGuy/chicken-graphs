@@ -233,18 +233,18 @@
   (let ([data (adjacency-table g)])
    (hash-table-fold data
                     (lambda (key val knil)
-                      (let ([ws (set-map (compose (cute hash-table-ref/default
-                                                        <> weight: 1)
-                                                  cdr)
-                                         (set-filter (lambda (x)
-                                                       (equal? u (car x)))
-                                                     val))])
+                      (let ([ws (map (compose (cute hash-table-ref/default
+                                                    <> weight: 1)
+                                              cdr)
+                                     (filter (lambda (x)
+                                               (equal? u (car x)))
+                                             (set->list val)))])
                         (cond
                           [(and weighted
                                 (not (set-null? ws)))
-                           (set-fold + knil ws)]
-                          [(not (set-null? ws))
-                           (set-count ws)]
+                           (foldl + knil ws)]
+                          [(not (null? ws))
+                           (length ws)]
                           [else knil])))
                     0)))
 
