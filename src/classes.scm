@@ -118,7 +118,7 @@
            "Cannot query vertex - does not exist" vertex)))
 
 (define-method (graph-vertex (g <abstract-graph>) vertex)
-  (hash-table->alist (hash-table-ref (graph-vertex-attr g) vertex)))
+  (hash-table-copy (hash-table-ref (graph-vertex-attr g) vertex)))
 
 (define-method (graph-vertices (g <abstract-graph>))
   (list->set (hash-table-keys (graph-vertex-attr g))))
