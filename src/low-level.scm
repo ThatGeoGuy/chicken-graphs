@@ -72,12 +72,6 @@
                                               (set-difference val (list->set new-val))))))))
 
 (define (vertex-update! g vertex attr)
-  (for-each (lambda (key)
-              (when (any (cute eq? key <>) attr)
-                (error 'vertex-update!
-                       "Cannot modify reserved attribute"
-                       key)))
-            '(indeg: outdeg:))
   (let ([attr-table (hash-table-ref (graph-vertex-attr g) vertex)])
    (hash-table-set! (graph-vertex-attr g)
                     vertex
