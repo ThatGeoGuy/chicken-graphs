@@ -65,7 +65,7 @@
     (g "The graph to test")
     (@to "bool")
     (@no-source))
-  (subclass? g <abstract-graph>))
+  (subclass? (class-of g) <abstract-graph>))
 
 (define-method (graph-adjacent? (g <graph>) u v)
   @("Tests whether an edge u->v and v->u exists in graph g"

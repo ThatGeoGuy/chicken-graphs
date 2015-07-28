@@ -77,6 +77,7 @@
 ;;; The reason for putting them here is to distinguish functionality based on type by
 ;;; separating the source files.
 
+(: graph->list deprecated)
 (define-method (graph->list (g <abstract-graph>))
   (hash-table-map (adjacency-table g)
                   (lambda (key val)
