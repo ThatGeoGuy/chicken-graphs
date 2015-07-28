@@ -145,7 +145,7 @@
 
 (define (graph-match G1 G2 gteq? semantic-feasibility?)
   @("A procedure which performs the partial recursive matching between graphs G1 and G2."
-    "Returns a stream which contains a list of the set of isomorphisms between G1 and G2."
+    "Returns a lazy-seq which contains a list of the set of isomorphisms between G1 and G2."
     "Note that if subgraph matching is desired, gteq? must be >= and G1 is the graph that will be tested for subgraph isomorphism (i.e. only subgraphs in G1 are searched)."
     (G1 "First graph")
     (G2 "Second graph")
@@ -177,12 +177,12 @@
 
 (define (graph-isomorphisms G1 G2 #!optional (semantic-feasibility?
                                                      (lambda (G1 G2 s n m) #t)))
-  @("Returns a stream of all the isomorphisms from G1 to G2. If none exist, the stream will be null."
+  @("Returns a lazy sequence of all the isomorphisms from G1 to G2. If none exist, the sequence will be null."
     (G1 "First graph")
     (G2 "Second graph")
     (semantic-feasibility? "A predicate procedure for testing semantic feasibility between two graphs."
                            "See argument information in `graph-isomorphic?` for more details.")
-    (@to "stream")
+    (@to "lazy-seq")
     (@no-source))
   (graph-match G1 G2 = semantic-feasibility?))
 
@@ -192,12 +192,12 @@
 
 (define (subgraph-isomorphisms G1 G2 #!optional (semantic-feasibility?
                                                      (lambda (G1 G2 s n m) #t)))
-  @("Returns a stream of all the isomorphisms from G1 to G2. If none exist, the stream will be null."
+  @("Returns a lazy sequence of all the isomorphisms from G1 to G2. If none exist, the sequence will be null."
     (G1 "First graph")
     (G2 "Second graph")
     (semantic-feasibility? "A predicate procedure for testing semantic feasibility between two graphs."
                            "See argument information in `graph-isomorphic?` for more details.")
-    (@to "stream")
+    (@to "lazy-seq")
     (@no-source))
   (graph-match G1 G2 >= semantic-feasibility?))
 
@@ -209,7 +209,7 @@
                                               (lambda (G1 G2 s n m) #t)))
   @("Tests whether two graphs are isomorphic, using the VF2 algorithm."
     "See: http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=1323804"
-    "If semantic is provided and non-false, then a semantic check is likewise performed."
+    "If semantic-feasibility? is provided, then a semantic check is likewise performed."
     (G1 "First graph")
     (G2 "Second graph")
     (semantic-feasibility? "A predicate procedure for testing semantic feasibility between two graphs."
