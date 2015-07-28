@@ -28,6 +28,7 @@
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
 (test-begin "MultiDigraph Properties")
+
 (test-group "identity properties"
   (test-generative ([v (gen-vertex-obj)])
     (let* ([G1 (make-multidigraph)]

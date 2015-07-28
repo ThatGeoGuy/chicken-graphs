@@ -134,7 +134,7 @@
     (@to "<multidigraph>")
     (@no-source))
   (let ([new-graph (graph-copy g)])
-    (apply graph-edge-add! new-graph u v attr)
+    (apply graph-edge-add! new-graph u v id attr)
     new-graph))
 
 (define-method (graph-edge-add! before: (g <multidigraph>) u v id #!rest attr)
