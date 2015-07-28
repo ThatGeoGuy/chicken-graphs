@@ -28,6 +28,7 @@
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
 (use arrays
+     coops
      data-generators
      posix
      test
@@ -48,6 +49,8 @@
                  (k #f)))
              #f
              args))))
+
+(include "test-primitives.scm")
 
 (define (gen-vertex-obj)
   (gen-sample-of
