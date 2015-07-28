@@ -120,7 +120,7 @@
                                                      id:)
                                      id)))
                       edges)])
-    (hash-table->alist (cdr e))))
+    (hash-table-copy (cdr e))))
 
 (define-method (graph-edge-add (g <multidigraph>) u v id #!rest attr)
   @("Adds an edge u->v that does not already exist within the graph g. (Non-destructive)"

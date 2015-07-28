@@ -91,7 +91,7 @@
          [e (set-find (lambda (x)
                         (equal? (car x) v))
                       edges)])
-    (hash-table->alist (cdr e))))
+    (hash-table-copy (cdr e))))
 
 (define-method (graph-edge-add (g <digraph>) u v #!rest attr)
   @("Adds an edge u->v that does not already exist within the digraph g. (Non-destructive)"
