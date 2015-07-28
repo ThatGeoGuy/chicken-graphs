@@ -59,23 +59,6 @@
                     aset)
       (k #f))))
 
-(define (set-fold f knil aset)
-  @("Folds over all the items in the set, calling (f knil item) for each item in the set."
-    "Note that there is no necessary order to a set, so left and right folds are not distinguished."
-    (f "A function of 2-arity (knil item) to fold over all the items in set.")
-    (knil "A starting point to fold over.")
-    (aset "A set to fold over.")
-    (@example
-      "Sums all the unique numbers in the set"
-      (define aset (set 1 2 2 3 3 4 4 4 5))
-      (set-fold + 0 aset))
-    (@no-source))
-  (let ([knil knil])
-   (set-for-each (lambda (item)
-                   (set! knil (f knil item)))
-                 aset)
-   knil))
-
 (define (hash-table-from-keys ls)
   @("Constructs a hash-table (as provided by srfi-69) from a key-value list."
     "The list is composed of (key: value ...) pairs, where each keyword is used to reference each value."
