@@ -91,13 +91,12 @@
             (let ([v (car v-id-pair)]
                   [id (cadr v-id-pair)])
               (for-each (lambda (u)
-                          (when ((gen-bool))
-                            (cond
-                              [(and (multigraph? G)
-                                    (not (graph-adjacent? G u v id)))
-                               (graph-edge-add! G u v id)]
-                              [(not (graph-adjacent? G u v))
-                               (graph-edge-add! G u v)])))
+                          (cond
+                            [(and (multigraph? G)
+                                  (not (graph-adjacent? G u v id)))
+                             (graph-edge-add! G u v id)]
+                            [(not (graph-adjacent? G u v))
+                             (graph-edge-add! G u v)]))
                         vs)))
           (zip vs ids))
         G))))
