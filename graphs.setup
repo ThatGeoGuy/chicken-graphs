@@ -11,9 +11,9 @@
 (install-extension
  'graphs
  `(,(dynld-name "graphs") ,(dynld-name "graphs.import"))
- `((version "0.4.2")))
+ `((version "0.4.3")))
 
 (install-extension
  'graphs-derived
  `(,(dynld-name "graphs-derived") ,(dynld-name "graphs-derived.import"))
- `((version "0.4.2")))
+ `((version "0.4.3")))
