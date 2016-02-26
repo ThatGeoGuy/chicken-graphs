@@ -39,7 +39,7 @@
    )
 
   (import chicken scheme data-structures)
-  (use arrays
+  (use arrays       ; Used to import sets
        coops
        coops-primitive-objects
        graphs
@@ -47,7 +47,8 @@
        matchable
        srfi-1
        srfi-69)
-  (import sets)
+
+  (import array-sets)
 
   (include "src/utils")
   (include "src/derived/utils-derived")

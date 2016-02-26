@@ -79,7 +79,8 @@
        matchable
        srfi-1
        srfi-69)
-  (import sets)
+
+  (import array-sets)
 
   (include "src/utils")
   (include "src/low-level")

@@ -33,7 +33,8 @@
      posix
      test
      test-generative)
-(import sets)
+
+(import array-sets)
 
 ;; Every test needs to load the module first
 ;; The module should be useable without having to install it first
