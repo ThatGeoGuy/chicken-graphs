@@ -34,7 +34,6 @@
    <multigraph>
    <digraph>
    <graph>
-   print-object
    make-multidigraph
    make-multigraph
    make-digraph

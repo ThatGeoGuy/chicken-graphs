@@ -13,7 +13,7 @@
  (license "BSD3")
  (category data)
  (depends arrays coops hahn lazy-seq matchable)
- (test-depends test test-generative data-generators)
+ (test-depends test)
  (author "Jeremy Steward")
  (email "jeremy@thatgeoguy.ca")
  (repo "https://github.com/ThatGeoGuy/chicken-graphs")
