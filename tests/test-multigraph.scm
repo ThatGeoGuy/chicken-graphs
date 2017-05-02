@@ -29,16 +29,16 @@
 
 (test-begin "MultiGraph Properties")
 (test-group "identity properties"
-  (test-generative ([v (gen-vertex-obj)])
-    (let* ([G1 (make-multigraph)]
-           [G2 (graph-vertex-remove (graph-vertex-add G1 v) v)])
-      (test-assert "Vertex identity - adjacency lists should be empty"
-        (and (equal? (graph->list G1) '())
-             (equal? (graph->list G2) '())))))
+  (let* ([v (gen-vertex-obj)]
+         [G1 (make-multigraph)]
+         [G2 (graph-vertex-remove (graph-vertex-add G1 v) v)])
+    (test-assert "Vertex identity - adjacency lists should be empty"
+                 (and (equal? (graph->list G1) '())
+                      (equal? (graph->list G2) '()))))
 
-  (test-generative ([u (gen-vertex-obj)]
-                    [v (gen-vertex-obj)]
-                    [id (gen-fixnum)])
+  (let ([u (gen-vertex-obj)]
+        [v (gen-vertex-obj)]
+        [id (random-integer 100)])
     (let* ([G1 (make-multigraph)]
            [G2 (graph-edge-remove (graph-edge-add G1 u v id) u v id)])
       (test-assert "Edge identity - v should not be adjacent to u"
@@ -60,26 +60,26 @@
                  (graph-vertex-exists? G1 v)))))))
 
 (test-group "commutativity properties"
-  (test-generative ([u (gen-vertex-obj)]
-                    [v (gen-vertex-obj)]
-                    [id (gen-fixnum)])
-    (unless (equal? u v)
-      (let* ([G1 (make-multigraph)]
-             [G2 (graph-vertex-add (graph-vertex-add G1 u) v)]
-             [G3 (graph-vertex-add (graph-vertex-add G1 v) u)]
-             [G4 (graph-vertex-remove (graph-vertex-remove G2 u) v)]
-             [G5 (graph-vertex-remove (graph-vertex-remove G2 v) u)])
-        (test-assert "Vertex commutativity - u should be present in both graphs"
-          (and (graph-vertex-exists? G2 u)
-               (graph-vertex-exists? G3 u)))
-        (test-assert "Vertex commutativity - v should be present in both graphs"
-          (and (graph-vertex-exists? G2 v)
-               (graph-vertex-exists? G3 v)))
-        (test-assert "Vertex commutativity - order of removal should not matter"
-          (and (not (or (graph-vertex-exists? G4 u)
-                        (graph-vertex-exists? G4 v)))
-               (not (or (graph-vertex-exists? G5 u)
-                        (graph-vertex-exists? G5 v)))))))
+  (let* ([u (gen-vertex-obj)]
+         [v (let loop ([v (gen-vertex-obj)])
+              (if (equal? u v) (loop (gen-vertex-obj)) v))]
+         [id (random-integer 100)])
+    (let* ([G1 (make-multigraph)]
+           [G2 (graph-vertex-add (graph-vertex-add G1 u) v)]
+           [G3 (graph-vertex-add (graph-vertex-add G1 v) u)]
+           [G4 (graph-vertex-remove (graph-vertex-remove G2 u) v)]
+           [G5 (graph-vertex-remove (graph-vertex-remove G2 v) u)])
+      (test-assert "Vertex commutativity - u should be present in both graphs"
+                   (and (graph-vertex-exists? G2 u)
+                        (graph-vertex-exists? G3 u)))
+      (test-assert "Vertex commutativity - v should be present in both graphs"
+                   (and (graph-vertex-exists? G2 v)
+                        (graph-vertex-exists? G3 v)))
+      (test-assert "Vertex commutativity - order of removal should not matter"
+                   (and (not (or (graph-vertex-exists? G4 u)
+                                 (graph-vertex-exists? G4 v)))
+                        (not (or (graph-vertex-exists? G5 u)
+                                 (graph-vertex-exists? G5 v))))))
 
     (let* ([G1 (make-multigraph)]
            [G2 (graph-edge-add G1 u v id)]

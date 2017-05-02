@@ -28,17 +28,19 @@
 ;;;; POSSIBILITY OF SUCH DAMAGE.
 
 (test-begin "Graph Properties")
-(test-group "identity properties"
-  (test-generative ([v (gen-vertex-obj)])
-    (let* ([G1 (make-graph)]
+(test-group
+  "identity properties"
+    (let* ([v (gen-vertex-obj)]
+           [G1 (make-graph)]
            [G2 (graph-vertex-remove (graph-vertex-add G1 v) v)])
       (test-assert "Vertex identity - adjacency lists should be empty"
         (and (equal? (graph->list G1) '())
-             (equal? (graph->list G2) '())))))
+             (equal? (graph->list G2) '()))))
 
-  (test-generative ([u (gen-vertex-obj)]
-                    [v (gen-vertex-obj)])
-    (let* ([G1 (make-graph)]
+
+    (let* ([u (gen-vertex-obj)]
+           [v (gen-vertex-obj)]
+           [G1 (make-graph)]
            [G2 (graph-edge-remove (graph-edge-add G1 u v) u v)])
       (test-assert "Edge identity - v should not be adjacent to u"
         (not (graph-adjacent? G2 u v)))
@@ -56,28 +58,29 @@
         (not (graph-adjacent? G1 u v)))
       (test-assert "Edge identity - original graph should not have u or v vertices"
         (not (or (graph-vertex-exists? G1 u)
-                 (graph-vertex-exists? G1 v)))))))
+                 (graph-vertex-exists? G1 v))))))
 
-(test-group "commutativity properties"
-  (test-generative ([u (gen-vertex-obj)]
-                    [v (gen-vertex-obj)])
-    (unless (equal? u v)
-      (let* ([G1 (make-graph)]
-             [G2 (graph-vertex-add (graph-vertex-add G1 u) v)]
-             [G3 (graph-vertex-add (graph-vertex-add G1 v) u)]
-             [G4 (graph-vertex-remove (graph-vertex-remove G2 u) v)]
-             [G5 (graph-vertex-remove (graph-vertex-remove G2 v) u)])
-        (test-assert "Vertex commutativity - u should be present in both graphs"
-          (and (graph-vertex-exists? G2 u)
-               (graph-vertex-exists? G3 u)))
-        (test-assert "Vertex commutativity - v should be present in both graphs"
-          (and (graph-vertex-exists? G2 v)
-               (graph-vertex-exists? G3 v)))
-        (test-assert "Vertex commutativity - order of removal should not matter"
-          (and (not (or (graph-vertex-exists? G4 u)
-                        (graph-vertex-exists? G4 v)))
-               (not (or (graph-vertex-exists? G5 u)
-                        (graph-vertex-exists? G5 v)))))))
+(test-group
+  "commutativity properties"
+  (let* ([u (gen-vertex-obj)]
+         [v (let loop ([v (gen-vertex-obj)])
+              (if (equal? u v) (loop (gen-vertex-obj)) v))] )
+    (let* ([G1 (make-graph)]
+           [G2 (graph-vertex-add (graph-vertex-add G1 u) v)]
+           [G3 (graph-vertex-add (graph-vertex-add G1 v) u)]
+           [G4 (graph-vertex-remove (graph-vertex-remove G2 u) v)]
+           [G5 (graph-vertex-remove (graph-vertex-remove G2 v) u)])
+      (test-assert "Vertex commutativity - u should be present in both graphs"
+                   (and (graph-vertex-exists? G2 u)
+                        (graph-vertex-exists? G3 u)))
+      (test-assert "Vertex commutativity - v should be present in both graphs"
+                   (and (graph-vertex-exists? G2 v)
+                        (graph-vertex-exists? G3 v)))
+      (test-assert "Vertex commutativity - order of removal should not matter"
+                   (and (not (or (graph-vertex-exists? G4 u)
+                                 (graph-vertex-exists? G4 v)))
+                        (not (or (graph-vertex-exists? G5 u)
+                                 (graph-vertex-exists? G5 v))))))
 
     (let* ([G1 (make-graph)]
            [G2 (graph-edge-add G1 u v)]
@@ -85,15 +88,15 @@
            [G4 (graph-edge-remove G2 u v)]
            [G5 (graph-edge-remove G2 v u)])
       (test-assert "Edge commutativity - u should be adjacent to v"
-        (and (graph-adjacent? G2 u v)
-             (graph-adjacent? G3 u v)))
+                   (and (graph-adjacent? G2 u v)
+                        (graph-adjacent? G3 u v)))
       (test-assert "Edge commutativity - v should be adjacent to u"
-        (and (graph-adjacent? G2 v u)
-             (graph-adjacent? G3 v u)))
+                   (and (graph-adjacent? G2 v u)
+                        (graph-adjacent? G3 v u)))
       (test-assert "Edge commutativity - removing edge u<->v: order should not matter"
-        (not (or (graph-adjacent? G4 u v)
-                 (graph-adjacent? G4 v u)
-                 (graph-adjacent? G5 u v)
-                 (graph-adjacent? G5 v u)))))))
+                   (not (or (graph-adjacent? G4 u v)
+                            (graph-adjacent? G4 v u)
+                            (graph-adjacent? G5 u v)
+                            (graph-adjacent? G5 v u)))))))
 
 (test-end "Graph Properties")

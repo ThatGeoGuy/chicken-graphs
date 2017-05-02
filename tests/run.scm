@@ -29,10 +29,8 @@
 
 (use arrays
      coops
-     data-generators
-     posix
-     test
-     test-generative)
+     random-bsd
+     test)
 
 (import array-sets)
 
@@ -53,15 +51,17 @@
 
 (include "test-primitives.scm")
 
+(define (gen-char)
+  ;; Takes a char from the 48 to 90 ASCII range
+  (integer->char (+ 48 (random-integer 42))))
+
+(define (gen-string n)
+  (list->string (map (lambda _ (gen-char)) (iota n))))
+
 (define (gen-vertex-obj)
-  (gen-sample-of
-    (lambda ()
-      (string->symbol
-        ((gen-string-of (gen-char #\0 #\z)
-                        (lambda () 8)))))
-    (gen-string-of (gen-char #\0 #\z)
-                   (lambda () 8))
-    (gen-fixnum)))
+  (if (zero? (random-integer 2))
+    (gen-char)
+    (gen-string 8)))
 
 (include "test-digraph.scm")
 (include "test-graph.scm")
@@ -70,37 +70,33 @@
 
 ;; Generates empty graphs => assumes make functions work by default
 (define (gen-empty-graph-type)
-  (gen-sample-of make-graph
-                 make-digraph
-                 make-multigraph
-                 make-multidigraph))
+  (list-ref (list make-graph
+                  make-digraph
+                  make-multigraph
+                  make-multidigraph)
+            (random-integer 4)))
 
 ;; Generates graph with random vertices / edges
 ;; Assumes graph-edge-add! works, which is why this is _after_
 ;; including test-(multi)(di)graph.scm
-(define (gen-graph #!optional (order (range 0 10)))
-  (lambda ()
-    (let ([G ((gen-empty-graph-type))]
-          [order ((gen-fixnum (if (pair? order)
-                                order
-                                (range 0 order))))])
-      (let* ([vs ((gen-list-of (gen-vertex-obj) order))]
-             [ids ((gen-list-of (gen-fixnum
-                                  (range 0 (length vs)))))])
-        (for-each
-          (lambda (v-id-pair)
-            (let ([v (car v-id-pair)]
-                  [id (cadr v-id-pair)])
-              (for-each (lambda (u)
-                          (cond
-                            [(and (multigraph? G)
-                                  (not (graph-adjacent? G u v id)))
-                             (graph-edge-add! G u v id)]
-                            [(not (graph-adjacent? G u v))
-                             (graph-edge-add! G u v)]))
-                        vs)))
-          (zip vs ids))
-        G))))
+(define (gen-graph #!optional (order 10))
+  (let ([G ((gen-empty-graph-type))])
+   (let* ([vs (map (lambda _ (gen-vertex-obj)) (iota order))]
+          [ids (map (lambda _ (random-integer 100)) (iota order))])
+     (for-each
+       (lambda (v-id-pair)
+         (let ([v (car v-id-pair)]
+               [id (cadr v-id-pair)])
+           (for-each (lambda (u)
+                       (cond
+                         [(and (multigraph? G)
+                               (not (graph-adjacent? G u v id)))
+                          (graph-edge-add! G u v id)]
+                         [(not (graph-adjacent? G u v))
+                          (graph-edge-add! G u v)]))
+                     vs)))
+       (zip vs ids))
+     G)))
 
 (include "test-isomorphism.scm")
 (test-exit)

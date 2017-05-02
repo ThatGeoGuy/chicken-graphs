@@ -29,30 +29,31 @@
 
 (test-begin "Isomorphism")
 
-(test-group "Isomorphic Identity"
-  (test-generative ([G (gen-graph)])
-    (test-assert "Any graph should be isomorphic to itself"
-      (graph-isomorphic? G G))
-    (test-assert "Any graph should be subgraph-isomorphic to itself"
-      (subgraph-isomorphic? G G)))
+(test-group
+  "Isomorphic Identity"
+  (let ([G (gen-graph 10)])
+   (test-assert "Any graph should be isomorphic to itself"
+                (graph-isomorphic? G G))
+   (test-assert "Any graph should be subgraph-isomorphic to itself"
+                (subgraph-isomorphic? G G)))
 
-  (test-generative ([G1 (gen-graph (range 5 10))] ; must have at least 1 vertex
-                    [v (gen-vertex-obj)])
-    (let ([G2 (graph-copy G1)])
+  (let* ([G1 (gen-graph 10)] ; must have at least 1 vertex
+         [G2 (graph-copy G1)]
+         [v (gen-vertex-obj)])
      (set-for-each (lambda (x)
                      (if (multigraph? G2)
                        (graph-edge-add! G2 x v 1)
                        (graph-edge-add! G2 x v)))
                    (graph-vertices G2))
      (test-assert "Any graph G{V,E} should be subgraph-isomorphic to G{V,E} + G{U,F}"
-       (subgraph-isomorphic? G2 G1))
+                  (subgraph-isomorphic? G2 G1))
      (test-assert "Any graph G{V,E} should not be isomorphic to G{V,E} + G{U,F}"
-       (not (graph-isomorphic? G2 G1))))))
+                  (not (graph-isomorphic? G2 G1)))))
 
 (test-group "Isomorphic Associativity"
-  (test-generative ([G1 (gen-graph 5)]
-                    [G2 (gen-graph 5)]
-                    [G3 (gen-graph 5)])
+  (let ([G1 (gen-graph 5)]
+        [G2 (gen-graph 5)]
+        [G3 (gen-graph 5)])
     (test-assert "If G1 <=> G2 and G2 <=> G3 then G1 <=> G3 else G1 !=> G3"
       (cond
         [(and (graph-isomorphic? G1 G2)
